@@ -11,12 +11,11 @@ import androidx.compose.ui.unit.dp
 import pl.pw.mierzopuls.R
 
 @Composable
-fun LogoPW() {
-    Image(
+fun LogoPW(modifier: Modifier = Modifier) {
+    Image(modifier = modifier.padding(15.dp)
+        .fillMaxWidth(),
         painter = painterResource(R.drawable.pw_mech_logo),
         contentDescription = "pw logo",
-        contentScale = ContentScale.FillWidth,
-        modifier = Modifier.padding(15.dp)
-            .fillMaxWidth()
+        contentScale = ContentScale.FillWidth
     )
 }
