@@ -21,16 +21,18 @@ fun Home() {
         Row(modifier = Modifier.align(Alignment.BottomCenter),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center) {
-            Button(onClick = { viewModel.onHistory() },
-                modifier = Modifier
+            Button(modifier = Modifier
                     .padding(16.dp)
-                    .wrapContentWidth(Alignment.Start)) {
+                    .wrapContentWidth(Alignment.Start),
+                onClick = { viewModel.onHistory() },
+                enabled = false) {
                 Text(text = "Wyświetl pomiary")
             }
-            Button(onClick = { viewModel.onStudy() },
-                modifier = Modifier
+            Button(modifier = Modifier
                     .padding(16.dp)
-                    .wrapContentWidth(Alignment.End)) {
+                    .wrapContentWidth(Alignment.End),
+                onClick = { viewModel.onStudy() },
+                enabled = false)  {
                 Text(text = "Nowe badanie")
             }
         }
@@ -42,20 +44,23 @@ fun Home() {
 fun HomePreview(){
     Box(modifier = Modifier.fillMaxSize()) {
         LogoPW(modifier = Modifier.align(Alignment.TopCenter))
-        PulseBtn(modifier = Modifier.align(Alignment.Center))
+        PulseBtn(modifier = Modifier.align(Alignment.Center),
+            onClick = { } )
         Row(modifier = Modifier.align(Alignment.BottomCenter),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center) {
-            Button(onClick = { /*TODO*/ },
-                modifier = Modifier
-                    .padding(16.dp)
-                    .wrapContentWidth(Alignment.Start)) {
+            Button(modifier = Modifier
+                .padding(16.dp)
+                .wrapContentWidth(Alignment.Start),
+                onClick = { },
+                enabled = false) {
                 Text(text = "Wyświetl pomiary")
             }
-            Button(onClick = { /*TODO*/ },
-                modifier = Modifier
-                    .padding(16.dp)
-                    .wrapContentWidth(Alignment.End)) {
+            Button(modifier = Modifier
+                .padding(16.dp)
+                .wrapContentWidth(Alignment.End),
+                onClick = { },
+                enabled = false)  {
                 Text(text = "Nowe badanie")
             }
         }
