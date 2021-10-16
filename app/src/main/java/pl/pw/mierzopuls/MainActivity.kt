@@ -41,7 +41,6 @@ fun DefaultPreview() {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top) {
-                LogoPW()
                 Home()
             }
         }
