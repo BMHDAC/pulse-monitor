@@ -1,12 +1,26 @@
 package pl.pw.mierzopuls.ui
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
 
 class HomeViewModel(
-    private val context: Context) {
-    fun onStart() {
-        Toast.makeText(context, "Start button clicked !", Toast.LENGTH_SHORT).show()
+    private val context: Context,
+    private val onPermissionHandler: (String) -> Unit) {
+
+    fun onStart() : Bitmap? {
+        if (hasPermissions(context, arrayOf(Manifest.permission.CAMERA))) {
+            //val camera = Camera(context)
+            //val frame = camera.grabFrame()
+            //val bitmap = frame.toBitmap(Camera.bitmapConverter)
+            return null
+        } else {
+            onPermissionHandler(Manifest.permission.CAMERA)
+        }
+        return null
     }
 
     fun onHistory() {
@@ -15,5 +29,15 @@ class HomeViewModel(
 
     fun onStudy() {
         Toast.makeText(context, "Study button clicked !", Toast.LENGTH_SHORT).show()
+    }
+
+    fun getCameraPreview() : Bitmap? {
+//        val camera = Camera()
+//        val bitmap = camera.grabFrame().toBitmap(Camera.bitmapConverter)
+        return null
+    }
+
+    private fun hasPermissions(context: Context, permissions: Array<String>): Boolean = permissions.all {
+        ActivityCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
     }
 }
