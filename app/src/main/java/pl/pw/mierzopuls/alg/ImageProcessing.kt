@@ -12,6 +12,11 @@ class ImageProcessing {
             Log.d("ImgProc, ","OpenCV library loaded correctly")
         }
     }
+
+    fun doNothing() {
+        return
+    }
+
     companion object {
 
     }

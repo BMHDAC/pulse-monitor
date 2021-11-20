@@ -6,10 +6,13 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
+import org.koin.java.KoinJavaComponent.inject
+import pl.pw.mierzopuls.alg.ImageProcessing
 
 class HomeViewModel(
     private val context: Context,
     private val onPermissionHandler: (String) -> Unit) {
+    private val imageProcessing: ImageProcessing by inject(ImageProcessing::class.java)
 
     fun onStart() : Bitmap? {
         if (hasPermissions(context, arrayOf(Manifest.permission.CAMERA))) {
@@ -24,6 +27,7 @@ class HomeViewModel(
     }
 
     fun onHistory() {
+        imageProcessing.doNothing()
         Toast.makeText(context, "History button clicked !", Toast.LENGTH_SHORT).show()
     }
 

@@ -30,7 +30,7 @@ fun Home(onPermissionHandler: (String) -> Unit) {
                 .padding(16.dp)
                 .wrapContentWidth(Alignment.Start),
                 onClick = { viewModel.onHistory() },
-                enabled = false) {
+                enabled = true) {
                 Text(text = "Wyświetl pomiary")
             }
             Button(modifier = Modifier
