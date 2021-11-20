@@ -27,7 +27,6 @@ class HomeViewModel(
     }
 
     fun onHistory() {
-        imageProcessing.doNothing()
         Toast.makeText(context, "History button clicked !", Toast.LENGTH_SHORT).show()
     }
 
