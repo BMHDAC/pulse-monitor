@@ -1,7 +1,9 @@
 package pl.pw.mierzopuls
 
 import android.app.Application
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -12,6 +14,7 @@ import pl.pw.mierzopuls.alg.ImageProcessing
 import pl.pw.mierzopuls.model.Study
 import pl.pw.mierzopuls.ui.History
 import pl.pw.mierzopuls.ui.Home
+import pl.pw.mierzopuls.ui.HomeViewModel
 
 class MierzoPulsApp : Application() {
 
@@ -34,15 +37,18 @@ class MierzoPulsApp : Application() {
     }
 }
 
+@ExperimentalFoundationApi
 @Composable
 fun app() {
+    val context = LocalContext.current
     val navController = rememberNavController()
+    val viewModel = HomeViewModel(context)
     NavHost(navController = navController, startDestination = "home") {
         composable("home") {
             Home(navController)
         }
         composable("history") {
-            History(listOf(Study("id1"), Study("id2"), Study("id3")))
+            History(viewModel.studies.value)
         }
     }
 }

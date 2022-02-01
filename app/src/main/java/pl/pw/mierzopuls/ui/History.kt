@@ -31,5 +31,8 @@ fun History(
 fun StudyRow(study: Study) {
     Card(
         modifier = Modifier.padding(16.dp),
-        elevation = 2.dp) { Text(text = "this is study: ${study.id}") }
+        elevation = 2.dp) {
+        Text(modifier = Modifier.padding(16.dp),
+            text = "this is study: ${study.id}")
+    }
 }

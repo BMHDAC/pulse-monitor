@@ -9,8 +9,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import pl.pw.mierzopuls.model.Camera
-import pl.pw.mierzopuls.ui.components.CameraPreview
 import pl.pw.mierzopuls.ui.components.LogoPW
 import pl.pw.mierzopuls.ui.components.PulseBtn
 
@@ -51,7 +49,6 @@ fun HomePreview(){
         LogoPW(modifier = Modifier.align(Alignment.TopCenter))
         PulseBtn(modifier = Modifier.align(Alignment.Center),
             onClick = { } )
-        CameraPreview(camera = Camera(LocalContext.current))
         Row(modifier = Modifier.align(Alignment.BottomCenter),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center) {
