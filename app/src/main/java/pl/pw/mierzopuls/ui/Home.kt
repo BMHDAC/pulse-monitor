@@ -8,14 +8,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import pl.pw.mierzopuls.model.Camera
 import pl.pw.mierzopuls.ui.components.CameraPreview
 import pl.pw.mierzopuls.ui.components.LogoPW
 import pl.pw.mierzopuls.ui.components.PulseBtn
 
 @Composable
-fun Home(onPermissionHandler: (String) -> Unit) {
-    val viewModel = HomeViewModel(LocalContext.current, onPermissionHandler)
+fun Home(navController: NavController) {
+    val viewModel = HomeViewModel(LocalContext.current)
 
     Box(modifier = Modifier.fillMaxSize()) {
         LogoPW(modifier = Modifier.align(Alignment.TopCenter))
@@ -29,8 +30,7 @@ fun Home(onPermissionHandler: (String) -> Unit) {
             Button(modifier = Modifier
                 .padding(16.dp)
                 .wrapContentWidth(Alignment.Start),
-                onClick = { viewModel.onHistory() },
-                enabled = false) {
+                onClick = { navController.navigate("history") }) {
                 Text(text = "Wyświetl pomiary")
             }
             Button(modifier = Modifier
@@ -38,7 +38,7 @@ fun Home(onPermissionHandler: (String) -> Unit) {
                 .wrapContentWidth(Alignment.End),
                 onClick = { viewModel.onStudy() },
                 enabled = false)  {
-                Text(text = "Nowe badanie")
+                Text(text = "Tryb debug")
             }
         }
     }
