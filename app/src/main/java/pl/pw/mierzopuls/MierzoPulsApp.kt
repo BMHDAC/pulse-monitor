@@ -7,11 +7,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.GlobalContext
 import org.koin.dsl.module
 import pl.pw.mierzopuls.alg.ImageProcessing
 import pl.pw.mierzopuls.model.Study
+import pl.pw.mierzopuls.ui.DebugView
 import pl.pw.mierzopuls.ui.History
 import pl.pw.mierzopuls.ui.Home
 import pl.pw.mierzopuls.ui.HomeViewModel
@@ -37,6 +39,7 @@ class MierzoPulsApp : Application() {
     }
 }
 
+@ExperimentalPermissionsApi
 @ExperimentalFoundationApi
 @Composable
 fun app() {
@@ -49,6 +52,9 @@ fun app() {
         }
         composable("history") {
             History(viewModel.studies.value)
+        }
+        composable("debug") {
+            DebugView()
         }
     }
 }

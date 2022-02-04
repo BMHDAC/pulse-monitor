@@ -34,8 +34,7 @@ fun Home(navController: NavController) {
             Button(modifier = Modifier
                 .padding(16.dp)
                 .wrapContentWidth(Alignment.End),
-                onClick = { viewModel.onStudy() },
-                enabled = false)  {
+                onClick = { navController.navigate("debug") })  {
                 Text(text = "Tryb debug")
             }
         }
