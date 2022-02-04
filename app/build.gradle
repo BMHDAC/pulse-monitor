@@ -62,6 +62,8 @@ dependencies {
     implementation 'com.google.android.material:material:1.4.0'
     // Accompanist
     implementation "com.google.accompanist:accompanist-permissions:0.24.0-alpha"
+    //Coil
+    implementation 'io.coil-kt:coil-compose:1.4.0'
     // CameraX
     def camerax_version = "1.1.0-alpha11"
     implementation "androidx.camera:camera-core:${camerax_version}"
