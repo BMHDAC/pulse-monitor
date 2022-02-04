@@ -71,7 +71,7 @@ fun DebugView(
             analysedBitmap = ImageProcessing().analyse(imageProxy.image!!)
             imageProxy.close()
         }
-        Column {
+        Column(modifier = Modifier.fillMaxSize()) {
             Row {
                 BoxWithConstraints(modifier = Modifier.padding(16.dp)) {
                     CameraPreview(

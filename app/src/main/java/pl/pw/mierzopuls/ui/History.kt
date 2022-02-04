@@ -1,6 +1,7 @@
 package pl.pw.mierzopuls.ui
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,7 +18,7 @@ import pl.pw.mierzopuls.ui.components.LogoPW
 fun History(
     studies: List<Study>
 ) {
-    LazyColumn {
+    LazyColumn(modifier = Modifier.fillMaxSize()) {
         stickyHeader {
             LogoPW()
         }
