@@ -53,22 +53,22 @@ fun DebugView(
                     context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                         data = Uri.fromParts("package", context.packageName, null)
                     })
-                }) {
-                    Text("Open Settings")
-                }
+                }) { Text("Open Settings") }
             }
         }
     ) {
-        val startbmp = Bitmap.createBitmap(640, 640, Bitmap.Config.ARGB_8888)
-        var analysedBitmap: Bitmap by remember { mutableStateOf(startbmp) }
+        var analysedBitmap: Bitmap by remember { mutableStateOf(
+            Bitmap.createBitmap(640, 640, Bitmap.Config.ARGB_8888)
+        ) }
         val lifecycleOwner = LocalLifecycleOwner.current
         val coroutineScope = rememberCoroutineScope()
         var previewUseCase = Preview.Builder().build() as UseCase
         val imageAnalysisUseCase = ImageAnalysis.Builder()
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .build()
+        val imageProcessing = ImageProcessing()
         imageAnalysisUseCase.setAnalyzer(Executors.newSingleThreadExecutor()) { imageProxy ->
-            analysedBitmap = ImageProcessing().analyse(imageProxy.image!!)
+            analysedBitmap = imageProcessing.analyse(imageProxy.image!!)
             imageProxy.close()
         }
         Column(modifier = Modifier.fillMaxSize()) {

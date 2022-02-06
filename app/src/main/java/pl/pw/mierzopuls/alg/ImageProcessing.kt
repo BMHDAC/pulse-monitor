@@ -7,27 +7,76 @@ import android.media.Image
 import android.util.Log
 import androidx.camera.core.ImageProxy
 import androidx.compose.ui.graphics.ImageBitmap
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import org.opencv.android.OpenCVLoader
 import org.opencv.android.Utils
+import org.opencv.core.Core
 import org.opencv.core.CvType
 import org.opencv.core.Mat
+import org.opencv.core.Scalar
 import org.opencv.imgproc.Imgproc
 import java.nio.ByteBuffer
+import java.time.Instant
+import java.time.format.DateTimeFormatter
 
 class ImageProcessing {
-    init {
-        if (!OpenCVLoader.initDebug()) {
-            Log.e("ImgProc", "Unable to load OpenCV! BE")
-            throw InstantiationException("OpenCV not loaded correctly!")
-        } else {
-            Log.d("ImgProc","OpenCV library loaded correctly")
+    var state = AlgState.START
+    var calibration: Calibration? = null
+
+    private var calibrationStart: Long? = null
+    private var redAcc: Double = 0.0
+    private var probeCounter = 0
+
+    companion object {
+        val CALIBRATION_TIME = 3000L
+        init {
+            if (!OpenCVLoader.initDebug()) {
+                Log.e("ImgProc", "Unable to load OpenCV! BE")
+                throw InstantiationException("OpenCV not loaded correctly!")
+            } else { Log.d("ImgProc","OpenCV library loaded correctly") }
         }
     }
 
     fun analyse(image: Image): Bitmap {
         return image.let {
             val mat = it?.yuvToRgba()
-            val tmpbmp = mat?.let { it1 -> Bitmap.createBitmap(it1.cols(), mat.rows(), Bitmap.Config.ARGB_8888) }
+            val thresholdMat = Mat(mat.rows(), mat.cols(), CvType.CV_8UC1)
+
+            when (state) {
+                AlgState.START -> {
+                    state = AlgState.CALIBRATION
+
+                    calibrationStart = System.currentTimeMillis()
+                    Log.d("ImgProc", "Calibration start: $calibrationStart")
+                }
+                AlgState.CALIBRATION -> {
+                    val meanPixelValue = Core.mean(mat)
+                    var s = ""
+                    for (i in meanPixelValue.`val`) {
+                        s += " $i"
+                    }
+
+                    Log.d("ImgProc", s)
+
+                    redAcc += meanPixelValue.`val`[0]
+                    probeCounter++
+
+                    if (System.currentTimeMillis() - calibrationStart!! > CALIBRATION_TIME) {
+                        calibration = Calibration(
+                            (redAcc/probeCounter), 0.0, 0.0
+                        )
+                        state = AlgState.ANALYZE
+                        Log.d("ImgProc", "Calibration = $calibration")
+                    }
+                }
+                AlgState.ANALYZE -> {
+                    val threshold = calibration!!.getThreshold(10)
+                    Core.inRange(mat, threshold.first, threshold.second, mat)
+                }
+            }
+
+            val tmpbmp = mat.let { it1 -> Bitmap.createBitmap(it1.cols(), mat.rows(), Bitmap.Config.ARGB_8888) }
             Utils.matToBitmap(mat, tmpbmp)
             tmpbmp
         }

@@ -21,7 +21,6 @@ import pl.pw.mierzopuls.ui.HomeViewModel
 class MierzoPulsApp : Application() {
 
     private val helpersModule = module {
-        single { ImageProcessing() }
     }
 
     private val repositoriesModule = module {
