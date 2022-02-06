@@ -38,48 +38,46 @@ class ImageProcessing {
         }
     }
 
-    fun analyse(image: Image): Bitmap {
-        return image.let {
-            val mat = it?.yuvToRgba()
-            val thresholdMat = Mat(mat.rows(), mat.cols(), CvType.CV_8UC1)
+    fun analyse(image: Image): Mat {
+        val mat = image.yuvToRgba()
+        when (state) {
+            AlgState.START -> {
+                state = AlgState.CALIBRATION
 
-            when (state) {
-                AlgState.START -> {
-                    state = AlgState.CALIBRATION
+                calibrationStart = System.currentTimeMillis()
+                Log.d("ImgProc", "Calibration start: $calibrationStart")
+            }
+            AlgState.CALIBRATION -> {
+                val meanPixelValue = Core.mean(mat)
+                Log.d("ImgProc", """
+                        red: ${meanPixelValue.`val`[0]}, 
+                        green: ${meanPixelValue.`val`[1]},
+                        blue: ${meanPixelValue.`val`[2]}
+                    """.trimIndent())
 
-                    calibrationStart = System.currentTimeMillis()
-                    Log.d("ImgProc", "Calibration start: $calibrationStart")
-                }
-                AlgState.CALIBRATION -> {
-                    val meanPixelValue = Core.mean(mat)
-                    var s = ""
-                    for (i in meanPixelValue.`val`) {
-                        s += " $i"
-                    }
+                redAcc += meanPixelValue.`val`[0]
+                probeCounter++
 
-                    Log.d("ImgProc", s)
-
-                    redAcc += meanPixelValue.`val`[0]
-                    probeCounter++
-
-                    if (System.currentTimeMillis() - calibrationStart!! > CALIBRATION_TIME) {
-                        calibration = Calibration(
-                            (redAcc/probeCounter), 0.0, 0.0
-                        )
-                        state = AlgState.ANALYZE
-                        Log.d("ImgProc", "Calibration = $calibration")
-                    }
-                }
-                AlgState.ANALYZE -> {
-                    val threshold = calibration!!.getThreshold(10)
-                    Core.inRange(mat, threshold.first, threshold.second, mat)
+                if (System.currentTimeMillis() - calibrationStart!! > CALIBRATION_TIME) {
+                    calibration = Calibration(
+                        (redAcc/probeCounter), 0.0, 0.0
+                    )
+                    state = AlgState.ANALYZE
+                    Log.d("ImgProc", "Calibration = $calibration")
                 }
             }
-
-            val tmpbmp = mat.let { it1 -> Bitmap.createBitmap(it1.cols(), mat.rows(), Bitmap.Config.ARGB_8888) }
-            Utils.matToBitmap(mat, tmpbmp)
-            tmpbmp
+            AlgState.ANALYZE -> {
+                val threshold = calibration!!.getThreshold(10)
+                Core.inRange(mat, threshold.first, threshold.second, mat)
+            }
         }
+        return mat
+    }
+
+    fun matToBitmap(mat: Mat): Bitmap {
+        val bitmap = mat.let { it1 -> Bitmap.createBitmap(it1.cols(), mat.rows(), Bitmap.Config.ARGB_8888) }
+        Utils.matToBitmap(mat, bitmap)
+        return bitmap
     }
 
     private fun Image.yuvToRgba(): Mat {

@@ -68,7 +68,8 @@ fun DebugView(
             .build()
         val imageProcessing = ImageProcessing()
         imageAnalysisUseCase.setAnalyzer(Executors.newSingleThreadExecutor()) { imageProxy ->
-            analysedBitmap = imageProcessing.analyse(imageProxy.image!!)
+            val analysedMat = imageProcessing.analyse(imageProxy.image!!)
+            analysedBitmap = imageProcessing.matToBitmap(analysedMat)
             imageProxy.close()
         }
         Column(modifier = Modifier.fillMaxSize()) {
