@@ -19,22 +19,27 @@ import org.opencv.imgproc.Imgproc
 import java.nio.ByteBuffer
 import java.time.Instant
 import java.time.format.DateTimeFormatter
+import kotlin.math.abs
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 class ImageProcessing {
     var state = AlgState.START
     var calibration: Calibration? = null
+    var currentRadius: Double? = 0.0
 
     private var calibrationStart: Long? = null
     private var redAcc: Double = 0.0
     private var probeCounter = 0
 
     companion object {
+        private const val LOG_TAG = "ImgProc"
         val CALIBRATION_TIME = 3000L
         init {
             if (!OpenCVLoader.initDebug()) {
-                Log.e("ImgProc", "Unable to load OpenCV! BE")
+                Log.e(LOG_TAG, "Unable to load OpenCV! BE")
                 throw InstantiationException("OpenCV not loaded correctly!")
-            } else { Log.d("ImgProc","OpenCV library loaded correctly") }
+            } else { Log.d(LOG_TAG,"OpenCV library loaded correctly") }
         }
     }
 
@@ -45,11 +50,11 @@ class ImageProcessing {
                 state = AlgState.CALIBRATION
 
                 calibrationStart = System.currentTimeMillis()
-                Log.d("ImgProc", "Calibration start: $calibrationStart")
+                Log.d(LOG_TAG, "Calibration start: $calibrationStart")
             }
             AlgState.CALIBRATION -> {
                 val meanPixelValue = Core.mean(mat)
-                Log.d("ImgProc", """
+                Log.d(LOG_TAG, """
                         red: ${meanPixelValue.`val`[0]}, 
                         green: ${meanPixelValue.`val`[1]},
                         blue: ${meanPixelValue.`val`[2]}
@@ -63,12 +68,18 @@ class ImageProcessing {
                         (redAcc/probeCounter), 0.0, 0.0
                     )
                     state = AlgState.ANALYZE
-                    Log.d("ImgProc", "Calibration = $calibration")
+                    Log.d(LOG_TAG, "Calibration = $calibration")
                 }
             }
             AlgState.ANALYZE -> {
                 val threshold = calibration!!.getThreshold(10)
                 Core.inRange(mat, threshold.first, threshold.second, mat)
+
+                val centerOfBlob = getCenterOfBlob(mat)
+                Log.d(LOG_TAG, "center of blob: x = ${centerOfBlob.first}, y = ${centerOfBlob.second}")
+
+                currentRadius = calculateMeanRadius(mat, centerOfBlob)
+                Log.d(LOG_TAG, "mean radius = $currentRadius")
             }
         }
         return mat
@@ -78,6 +89,65 @@ class ImageProcessing {
         val bitmap = mat.let { it1 -> Bitmap.createBitmap(it1.cols(), mat.rows(), Bitmap.Config.ARGB_8888) }
         Utils.matToBitmap(mat, bitmap)
         return bitmap
+    }
+
+    fun getCenterOfBlob(mat: Mat): Pair<Int, Int> {
+        var centerOfBlob = 0.0 to 0.0
+        for (i in 0 until mat.rows()) {
+            for (j in 0 until mat.cols()) {
+                val value = if (mat.get(i,j)[0] == 0.0) 0 else 1
+                centerOfBlob = centerOfBlob.first + i * value to
+                        centerOfBlob.second + j * value
+            }
+        }
+        return (centerOfBlob.first / (mat.rows()*255)).toInt() to
+                (centerOfBlob.second / (mat.cols()*255)).toInt()
+    }
+
+    enum class Direction(val xOffset: Int, val yOffset: Int) {
+        `0`(1,0),
+        `45`(1,1),
+        `90`(0,1),
+        `135`(-1,1),
+        `180`(-1,0),
+        `225`(-1,-1),
+        `270`(0,-1),
+        `315`(1,-1),
+    }
+
+    private fun calculateSingleRadius(mat: Mat, center: Pair<Int, Int>, direction: Direction): Double? {
+        var stopPoint = center
+        while (true) {
+            stopPoint = stopPoint.first + direction.xOffset to stopPoint.second + direction.yOffset
+            if (stopPoint.first >= mat.rows() || stopPoint.first < 0 ||
+                stopPoint.second >= mat.cols() || stopPoint.second < 0) {
+                return null
+            }
+            if (mat.get(stopPoint.first, stopPoint.second)[0] == 0.0) {
+                return sqrt(
+                    abs(
+                        (center.first - stopPoint.first).toDouble()
+                    ).pow(2) + abs(
+                        (center.second - stopPoint.second).toDouble()
+                    ).pow(2)
+                )
+            }
+        }
+    }
+
+    fun calculateMeanRadius(mat: Mat, center: Pair<Int, Int>): Double? {
+        val radiuses = Direction.values().map { calculateSingleRadius(mat,center,it) }
+
+        var acc = 0.0
+        var counter = 0
+        for (radius in radiuses) {
+            if (radius != null) {
+                acc += radius
+                counter++
+            }
+        }
+
+        return if (counter != 0) acc / counter else null
     }
 
     private fun Image.yuvToRgba(): Mat {

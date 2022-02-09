@@ -60,6 +60,7 @@ fun DebugView(
         var analysedBitmap: Bitmap by remember { mutableStateOf(
             Bitmap.createBitmap(640, 640, Bitmap.Config.ARGB_8888)
         ) }
+        var currentRadius: Double? by remember { mutableStateOf(0.0) }
         val lifecycleOwner = LocalLifecycleOwner.current
         val coroutineScope = rememberCoroutineScope()
         var previewUseCase = Preview.Builder().build() as UseCase
@@ -70,6 +71,7 @@ fun DebugView(
         imageAnalysisUseCase.setAnalyzer(Executors.newSingleThreadExecutor()) { imageProxy ->
             val analysedMat = imageProcessing.analyse(imageProxy.image!!)
             analysedBitmap = imageProcessing.matToBitmap(analysedMat)
+            //currentRadius = imageProcessing.currentRadius
             imageProxy.close()
         }
         Column(modifier = Modifier.fillMaxSize()) {
@@ -103,6 +105,9 @@ fun DebugView(
                 BoxWithConstraints(modifier = Modifier.padding(16.dp)) {
                     Image(painter = BitmapPainter(analysedBitmap.asImageBitmap()), contentDescription ="" )
                 }
+            }
+            Row {
+                Text(text = "Current radius = $currentRadius")
             }
         }
     }
