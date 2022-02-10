@@ -25,10 +25,13 @@ import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import com.github.mikephil.charting.data.Entry
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import org.opencv.android.Utils
 import pl.pw.mierzopuls.alg.ImageProcessing
 import pl.pw.mierzopuls.ui.components.CameraPreview
+import pl.pw.mierzopuls.ui.components.LineChart
 import pl.pw.mierzopuls.util.Permission
 import pl.pw.mierzopuls.util.getCameraProvider
 import java.util.concurrent.Executor
@@ -108,6 +111,18 @@ fun DebugView(
             }
             Row {
                 Text(text = "Current radius = $currentRadius")
+            }
+            Row {
+                LineChart(modifier = Modifier.fillMaxWidth().height(200.dp),
+                    entries = listOf(
+                        Entry(1f,1f),
+                        Entry(2f,2f),
+                        Entry(3f,3f),
+                        Entry(4f,4f),
+                        Entry(5f,5f),
+                        ),
+                    xLabel = "time",
+                    yLabel = "data")
             }
         }
     }
