@@ -1,32 +1,26 @@
 package pl.pw.mierzopuls.alg
 
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.ImageFormat
 import android.media.Image
 import android.util.Log
-import androidx.camera.core.ImageProxy
-import androidx.compose.ui.graphics.ImageBitmap
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import org.opencv.android.OpenCVLoader
 import org.opencv.android.Utils
 import org.opencv.core.Core
+import org.opencv.core.Core.countNonZero
 import org.opencv.core.CvType
 import org.opencv.core.Mat
 import org.opencv.core.Scalar
 import org.opencv.imgproc.Imgproc
-import java.nio.ByteBuffer
-import java.time.Instant
-import java.time.format.DateTimeFormatter
+import java.lang.IllegalStateException
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
 
 class ImageProcessing {
-    var state = AlgState.START
-    var calibration: Calibration? = null
-    var currentRadius: Double? = 0.0
+    var value: Int = -100
+    var limeStamps: List<Long> = listOf()
+    var values: List<Int> = listOf()
 
     private var calibrationStart: Long? = null
     private var redAcc: Double = 0.0
@@ -34,7 +28,7 @@ class ImageProcessing {
 
     companion object {
         private const val LOG_TAG = "ImgProc"
-        val CALIBRATION_TIME = 3000L
+        const val CALIBRATION_TIME = 3000L
         init {
             if (!OpenCVLoader.initDebug()) {
                 Log.e(LOG_TAG, "Unable to load OpenCV! BE")
@@ -43,46 +37,63 @@ class ImageProcessing {
         }
     }
 
-    fun analyse(image: Image): Mat {
+    fun analyseDebug(image: Image): Mat {
         val mat = image.yuvToRgba()
-        when (state) {
-            AlgState.START -> {
-                state = AlgState.CALIBRATION
+//        when (state) {
+//            AlgState.START -> {
+//                state = AlgState.CALIBRATION
+//
+//                calibrationStart = System.currentTimeMillis()
+//                Log.d(LOG_TAG, "Calibration start: $calibrationStart")
+//            }
+//            AlgState.CALIBRATION -> {
+//                val meanPixelValue = Core.mean(mat)
+//                Log.d(LOG_TAG, """
+//                        red: ${meanPixelValue.`val`[0]},
+//                        green: ${meanPixelValue.`val`[1]},
+//                        blue: ${meanPixelValue.`val`[2]}
+//                    """.trimIndent())
+//
+//                redAcc += meanPixelValue.`val`[0]
+//                probeCounter++
+//
+//                if (System.currentTimeMillis() - calibrationStart!! > CALIBRATION_TIME) {
+//                    calibration = Calibration(
+//                        (redAcc/probeCounter), 0.0, 0.0
+//                    )
+//                    state = AlgState.ANALYZE
+//                    Log.d(LOG_TAG, "Calibration = $calibration")
+//                }
+//            }
+//            AlgState.ANALYZE -> {
+//                val threshold = calibration!!.getThreshold(5)
+//                Core.inRange(mat, threshold.first, threshold.second, mat)
+//                value = countNonZero(mat)
+//
+////                val centerOfBlob = getCenterOfBlob(mat)
+////                Log.d(LOG_TAG, "center of blob: x = ${centerOfBlob.first}, y = ${centerOfBlob.second}")
+////
+////                currentRadius = calculateMeanRadius(mat, centerOfBlob)
+////                Log.d(LOG_TAG, "mean radius = $currentRadius")
+//            }
+//        }
+        return mat
+    }
 
-                calibrationStart = System.currentTimeMillis()
-                Log.d(LOG_TAG, "Calibration start: $calibrationStart")
+    fun processImage(algState: AlgState, image: Image): Double {
+        val mat = image.yuvToRgba()
+        return when (algState) {
+            is AlgState.Calibrate -> {
+                return mean(mat).`val`[0]
             }
-            AlgState.CALIBRATION -> {
-                val meanPixelValue = Core.mean(mat)
-                Log.d(LOG_TAG, """
-                        red: ${meanPixelValue.`val`[0]}, 
-                        green: ${meanPixelValue.`val`[1]},
-                        blue: ${meanPixelValue.`val`[2]}
-                    """.trimIndent())
-
-                redAcc += meanPixelValue.`val`[0]
-                probeCounter++
-
-                if (System.currentTimeMillis() - calibrationStart!! > CALIBRATION_TIME) {
-                    calibration = Calibration(
-                        (redAcc/probeCounter), 0.0, 0.0
-                    )
-                    state = AlgState.ANALYZE
-                    Log.d(LOG_TAG, "Calibration = $calibration")
-                }
-            }
-            AlgState.ANALYZE -> {
-                val threshold = calibration!!.getThreshold(10)
+            is AlgState.Register -> {
+                val threshold = algState.calibration.getThreshold(5)
                 Core.inRange(mat, threshold.first, threshold.second, mat)
 
-                val centerOfBlob = getCenterOfBlob(mat)
-                Log.d(LOG_TAG, "center of blob: x = ${centerOfBlob.first}, y = ${centerOfBlob.second}")
-
-                currentRadius = calculateMeanRadius(mat, centerOfBlob)
-                Log.d(LOG_TAG, "mean radius = $currentRadius")
+                return countNonZero(mat).toDouble()
             }
+            AlgState.NONE -> throw IllegalStateException("Algorithm cannot be $algState")
         }
-        return mat
     }
 
     fun matToBitmap(mat: Mat): Bitmap {
@@ -135,7 +146,7 @@ class ImageProcessing {
         }
     }
 
-    fun calculateMeanRadius(mat: Mat, center: Pair<Int, Int>): Double? {
+    fun calculateMeanRadius(mat: Mat, center: Pair<Int, Int>): Double {
         val radiuses = Direction.values().map { calculateSingleRadius(mat,center,it) }
 
         var acc = 0.0
@@ -147,7 +158,7 @@ class ImageProcessing {
             }
         }
 
-        return if (counter != 0) acc / counter else null
+        return if (counter != 0) acc / counter else 0.0
     }
 
     private fun Image.yuvToRgba(): Mat {
@@ -219,4 +230,13 @@ class ImageProcessing {
 
         return rgbaMat
     }
+
+    /**
+     * @return Scalar:
+     * val[0] -> red
+     * val[1] -> green
+     * val[2] -> blue
+    */
+    private fun mean(src: Mat): Scalar = Core.mean(src)
+
 }

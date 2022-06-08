@@ -4,15 +4,17 @@ import android.app.Application
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import kotlinx.coroutines.CoroutineScope
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.GlobalContext
 import org.koin.dsl.module
 import pl.pw.mierzopuls.alg.ImageProcessing
-import pl.pw.mierzopuls.model.Study
+import pl.pw.mierzopuls.model.StudyRepository
 import pl.pw.mierzopuls.ui.DebugView
 import pl.pw.mierzopuls.ui.History
 import pl.pw.mierzopuls.ui.Home
@@ -20,11 +22,12 @@ import pl.pw.mierzopuls.ui.HomeViewModel
 
 class MierzoPulsApp : Application() {
 
-    private val helpersModule = module {
+    private val processingModule = module {
+        single { ImageProcessing() }
     }
 
     private val repositoriesModule = module {
-
+        single { StudyRepository() }
     }
 
     override fun onCreate() {
@@ -32,7 +35,7 @@ class MierzoPulsApp : Application() {
 
         GlobalContext.startKoin {
             androidContext(applicationContext)
-            modules(helpersModule)
+            modules(processingModule)
             modules(repositoriesModule)
         }
     }
@@ -43,17 +46,18 @@ class MierzoPulsApp : Application() {
 @Composable
 fun app() {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     val navController = rememberNavController()
-    val viewModel = HomeViewModel(context)
+    val viewModel = HomeViewModel(context, lifecycleOwner, navController)
     NavHost(navController = navController, startDestination = "home") {
         composable("home") {
-            Home(navController)
+            Home(viewModel)
         }
         composable("history") {
-            History(viewModel.studies.value)
+            //History(viewModel.studies.value)
         }
         composable("debug") {
-            DebugView()
+           // DebugView()
         }
     }
 }
