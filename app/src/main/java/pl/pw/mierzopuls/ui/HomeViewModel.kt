@@ -12,6 +12,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.java.KoinJavaComponent.inject
@@ -20,6 +21,7 @@ import pl.pw.mierzopuls.alg.Calibration
 import pl.pw.mierzopuls.alg.ImageProcessing
 import pl.pw.mierzopuls.model.Study
 import pl.pw.mierzopuls.model.StudyRepository
+import pl.pw.mierzopuls.util.CameraLifecycle
 import pl.pw.mierzopuls.util.getCameraProvider
 import java.text.SimpleDateFormat
 import java.util.*
@@ -29,23 +31,28 @@ import kotlin.coroutines.coroutineContext
 class HomeViewModel(
     private val context: Context,
     private val lifecycleOwner: LifecycleOwner,
-    val navController: NavController
+    private val navController: NavController,
+    private val coroutineScope: CoroutineScope
 ): ViewModel() {
+    private val cameraLifecycle: CameraLifecycle by inject(CameraLifecycle::class.java)
     private val imageProcessing: ImageProcessing by inject(ImageProcessing::class.java)
     private val studyRepository: StudyRepository by inject(StudyRepository::class.java)
     private var lastTime by mutableStateOf(-1L)
     var timeStamps: List<Long> = listOf()
     var values: List<Double> = listOf()
     var algState: AlgState by mutableStateOf(AlgState.NONE)
-    var camera: Camera? = null
+    var studyOn: Boolean by mutableStateOf(false)
 
 
     fun beginStudy() {
+        studyOn = true
         lastTime = System.currentTimeMillis()
         algState = AlgState.Calibrate
+        coroutineScope.launch { prepareCamera() }
+        cameraLifecycle.doOnStart()
     }
 
-    fun beginRegistration() {
+    private fun beginRegistration() {
         lastTime = System.currentTimeMillis()
         algState = AlgState.Register(Calibration(values.average(),0.0,0.0))
         values = listOf()
@@ -54,29 +61,28 @@ class HomeViewModel(
 
     fun showResult() {
         //TODO refactor
-        imageAnalysisUseCase.clearAnalyzer()
         val parser = SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy")
         val formatter = SimpleDateFormat("dd.MM.yyyy_HH:mm")
         val output: String = formatter.format(Date.parse(Calendar.getInstance().time.toString()))
         val study = Study("study_${output}", values = values.map { it.toInt() }, timeStamps = timeStamps)
         algState = AlgState.NONE
+        studyOn = false
         studyRepository.save(context, study)
     }
 
-    fun dismissStudy() {
-        lifecycleOwner.lifecycleScope.launch {
-            context.getCameraProvider().let {
-                it.unbindAll()
-            }
-        }
+    suspend fun dismissStudy() {
+        context.getCameraProvider().unbindAll()
+        cameraLifecycle.doOnDestroy()
     }
 
     fun onHistory() {
         Toast.makeText(context, "History button clicked !", Toast.LENGTH_SHORT).show()
+        navController.navigate("history")
     }
 
     fun onStudy() {
         Toast.makeText(context, "Study button clicked !", Toast.LENGTH_SHORT).show()
+        navController.navigate("debug")
     }
 
     private val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
@@ -101,7 +107,7 @@ class HomeViewModel(
                         values += imageProcessing.processImage(algState, image)
                         timeStamps += System.currentTimeMillis() - lastTime
 
-                        if (System.currentTimeMillis() - lastTime > 13000L) { showResult() }
+                        if (System.currentTimeMillis() - lastTime > 4000L) { showResult() }
                     }
                 }
                 imageProxy.close()
@@ -126,6 +132,5 @@ class HomeViewModel(
         } catch (ex: Exception) {
             Log.e("CameraCapture", "Failed to bind camera use cases", ex)
         }
-        algState = AlgState.Calibrate
     }
 }

@@ -33,24 +33,31 @@ fun Home(viewModel: HomeViewModel) {
             Button(modifier = Modifier
                 .padding(16.dp)
                 .wrapContentWidth(Alignment.Start),
-                onClick = { viewModel.navController.navigate("history") }) {
+                onClick = { viewModel.onHistory() }) {
                 Text(text = "Wyświetl pomiary")
             }
             Button(modifier = Modifier
                 .padding(16.dp)
                 .wrapContentWidth(Alignment.End),
-                onClick = { viewModel.navController.navigate("debug") })  {
+                onClick = { viewModel.onStudy() })  {
                 Text(text = "Tryb debug")
             }
         }
     }
-    if (viewModel.algState != AlgState.NONE) {
-        LaunchedEffect(true) {
+    LaunchedEffect(viewModel.studyOn) {
+        if (viewModel.studyOn) {
             viewModel.prepareCamera()
-        }
-    } else {
-        LaunchedEffect(true) {
+        } else {
             viewModel.dismissStudy()
         }
     }
+//    if (viewModel.algState != AlgState.NONE) {
+//        LaunchedEffect(true) {
+//            viewModel.prepareCamera()
+//        }
+//    } else {
+//        LaunchedEffect(true) {
+//            viewModel.dismissStudy()
+//        }
+//    }
 }
