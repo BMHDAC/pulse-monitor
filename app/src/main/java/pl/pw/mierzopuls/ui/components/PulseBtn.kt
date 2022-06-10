@@ -34,6 +34,7 @@ fun PulseBtn(modifier: Modifier = Modifier, viewModel: HomeViewModel) {
         shape = CircleShape,
         onClick = {
             if (algState is AlgState.NONE) viewModel.beginStudy()
+            if (algState is AlgState.Result) viewModel.dismissResult()
         }) {
         if (algState !is AlgState.NONE) {
             Icon(modifier = Modifier.padding(8.dp),

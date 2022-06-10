@@ -44,13 +44,13 @@ fun Home(viewModel: HomeViewModel) {
             }
         }
     }
-    LaunchedEffect(viewModel.studyOn) {
-        if (viewModel.studyOn) {
-            viewModel.prepareCamera()
-        } else {
-            viewModel.dismissStudy()
-        }
-    }
+//    LaunchedEffect(viewModel.studyOn) {
+//        if (viewModel.studyOn) {
+//            viewModel.prepareCamera()
+//        } else {
+//            viewModel.dismissStudy()
+//        }
+//    }
 //    if (viewModel.algState != AlgState.NONE) {
 //        LaunchedEffect(true) {
 //            viewModel.prepareCamera()

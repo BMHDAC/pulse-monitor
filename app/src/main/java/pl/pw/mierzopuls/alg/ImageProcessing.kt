@@ -92,7 +92,8 @@ class ImageProcessing {
 
                 return countNonZero(mat).toDouble()
             }
-            AlgState.NONE -> throw IllegalStateException("Algorithm cannot be $algState")
+            AlgState.NONE,
+            is AlgState.Result -> throw IllegalStateException("Algorithm cannot be $algState")
         }
     }
 

@@ -48,7 +48,9 @@ class HomeViewModel(
         studyOn = true
         lastTime = System.currentTimeMillis()
         algState = AlgState.Calibrate
-        coroutineScope.launch { prepareCamera() }
+        coroutineScope.launch {
+            prepareCamera()
+        }
         cameraLifecycle.doOnStart()
     }
 
@@ -64,15 +66,18 @@ class HomeViewModel(
         val parser = SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy")
         val formatter = SimpleDateFormat("dd.MM.yyyy_HH:mm")
         val output: String = formatter.format(Date.parse(Calendar.getInstance().time.toString()))
-        val study = Study("study_${output}", values = values.map { it.toInt() }, timeStamps = timeStamps)
-        algState = AlgState.NONE
+        val study = Study("study_${output}", values = values.map { it.toInt() }, timeStamps = timeStamps, pulse = 75)
+        algState = AlgState.Result(study)
         studyOn = false
         studyRepository.save(context, study)
+        coroutineScope.launch {
+            context.getCameraProvider().unbindAll()
+            cameraLifecycle.doOnDestroy()
+        }
     }
 
-    suspend fun dismissStudy() {
-        context.getCameraProvider().unbindAll()
-        cameraLifecycle.doOnDestroy()
+    fun dismissResult() {
+        algState = AlgState.NONE
     }
 
     fun onHistory() {
@@ -120,7 +125,7 @@ class HomeViewModel(
             // Must unbind the use-cases before rebinding them.
             cameraProvider.unbindAll()
             val camera = cameraProvider.bindToLifecycle(
-                lifecycleOwner, cameraSelector, imageAnalysisUseCase
+                cameraLifecycle, cameraSelector, imageAnalysisUseCase
             )
             val factory: MeteringPointFactory = SurfaceOrientedMeteringPointFactory(
                 10F, 10F
