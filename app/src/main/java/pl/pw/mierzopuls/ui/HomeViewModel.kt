@@ -3,22 +3,17 @@ package pl.pw.mierzopuls.ui
 import android.annotation.SuppressLint
 import android.content.Context
 import android.media.Image
-import android.os.SystemClock
 import android.util.Log
 import android.widget.Toast
 import androidx.camera.core.*
 import androidx.compose.runtime.*
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.java.KoinJavaComponent.inject
-import pl.pw.mierzopuls.alg.AlgState
-import pl.pw.mierzopuls.alg.Calibration
-import pl.pw.mierzopuls.alg.ImageProcessing
+import pl.pw.mierzopuls.alg.*
 import pl.pw.mierzopuls.model.Study
 import pl.pw.mierzopuls.model.StudyRepository
 import pl.pw.mierzopuls.util.CameraLifecycle
@@ -26,7 +21,6 @@ import pl.pw.mierzopuls.util.getCameraProvider
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.Executors
-import kotlin.coroutines.coroutineContext
 
 class HomeViewModel(
     private val context: Context,
@@ -66,7 +60,23 @@ class HomeViewModel(
         val parser = SimpleDateFormat("EEE MMM dd HH:mm:ss Z yyyy")
         val formatter = SimpleDateFormat("dd.MM.yyyy_HH:mm")
         val output: String = formatter.format(Date.parse(Calendar.getInstance().time.toString()))
-        val study = Study("study_${output}", values = values.map { it.toInt() }, timeStamps = timeStamps, pulse = 75)
+        val timeStart = timeStamps[0]
+        val timeStop = timeStamps.last()
+
+        val Fs = timeStamps.size/((timeStop - timeStart).toDouble()/1000)
+        val filteredSignal = FIRFilter(values.toDoubleArray(), Fs)
+        val peaks = peakFinder(timeStamps.map { it.toDouble() }.toDoubleArray(), filteredSignal)
+
+        val pulse = calculatePulse(timeStamps.map { (it - timeStart).toDouble() }. filterIndexed { idx, _ ->  peaks.contains(idx) }.toDoubleArray())
+
+        val study = Study(
+            date = output,
+            raw = values,
+            times = timeStamps.map { (it - timeStart).toInt() },
+            filtered = filteredSignal.toList(),
+            peaks = peaks,
+            pulse = pulse.toInt())
+
         algState = AlgState.Result(study)
         studyOn = false
         studyRepository.save(context, study)
@@ -106,13 +116,13 @@ class HomeViewModel(
                     is AlgState.Calibrate -> {
                         values += imageProcessing.processImage(algState, image)
 
-                        if (System.currentTimeMillis() - lastTime > 4000L) {  beginRegistration() }
+                        if (System.currentTimeMillis() - lastTime > 3000L) {  beginRegistration() }
                     }
                     is AlgState.Register -> {
                         values += imageProcessing.processImage(algState, image)
                         timeStamps += System.currentTimeMillis() - lastTime
 
-                        if (System.currentTimeMillis() - lastTime > 4000L) { showResult() }
+                        if (System.currentTimeMillis() - lastTime > 10000L) { showResult() }
                     }
                 }
                 imageProxy.close()
