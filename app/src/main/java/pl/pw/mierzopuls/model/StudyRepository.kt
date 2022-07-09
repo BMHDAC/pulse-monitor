@@ -1,9 +1,6 @@
 package pl.pw.mierzopuls.model
 
 import android.content.Context
-import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
-import com.google.gson.Gson
-import pl.pw.mierzopuls.alg.AlgState
 import java.io.File
 
 class StudyRepository {

@@ -6,12 +6,11 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.media.Image
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.compose.ManagedActivityResultLauncher
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
@@ -43,12 +42,10 @@ class HomeViewModel(
     var timeStamps: List<Long> = listOf()
     var values: List<Double> = listOf()
     var algState: AlgState by mutableStateOf(AlgState.NONE)
-    var studyOn: Boolean by mutableStateOf(false)
 
 
     fun beginStudy() {
         if (!checkPermissions()) return
-        studyOn = true
         lastTime = System.currentTimeMillis()
         algState = AlgState.Calibrate
         coroutineScope.launch {
@@ -59,7 +56,12 @@ class HomeViewModel(
 
     private fun beginRegistration() {
         lastTime = System.currentTimeMillis()
-        algState = AlgState.Register(Calibration(values.average(),0.0,0.0))
+        algState = AlgState.Register(
+            Calibration(
+                values.average(),
+                0.0,
+                0.0)
+        )
         values = listOf()
         timeStamps = listOf()
     }
@@ -87,7 +89,6 @@ class HomeViewModel(
             pulse = pulse.toInt())
 
         algState = AlgState.Result(study)
-        studyOn = false
         studyRepository.save(context, study)
         studies += study
         coroutineScope.launch {
@@ -102,11 +103,6 @@ class HomeViewModel(
 
     fun onHistory() {
         navController.navigate("history")
-    }
-
-    fun onStudy() {
-        Toast.makeText(context, "Study button clicked !", Toast.LENGTH_SHORT).show()
-        navController.navigate("debug")
     }
 
     private val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA

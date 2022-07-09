@@ -12,7 +12,6 @@ import org.opencv.core.CvType
 import org.opencv.core.Mat
 import org.opencv.core.Scalar
 import org.opencv.imgproc.Imgproc
-import java.lang.IllegalStateException
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt

@@ -17,8 +17,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import pl.pw.mierzopuls.model.Study
-import pl.pw.mierzopuls.ui.components.StudyChart
 import pl.pw.mierzopuls.ui.components.LogoPW
+import pl.pw.mierzopuls.ui.components.StudyChart
 import pl.pw.mierzopuls.util.SampleData
 
 @ExperimentalFoundationApi
