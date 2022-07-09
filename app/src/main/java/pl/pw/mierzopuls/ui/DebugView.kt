@@ -25,7 +25,6 @@ import pl.pw.mierzopuls.alg.AlgState
 import pl.pw.mierzopuls.alg.ImageProcessing
 import pl.pw.mierzopuls.ui.components.CameraPreview
 import pl.pw.mierzopuls.ui.components.Checkbox
-import pl.pw.mierzopuls.ui.components.LineChart
 import pl.pw.mierzopuls.util.Permission
 import pl.pw.mierzopuls.util.getCameraProvider
 import java.util.concurrent.Executors
@@ -142,18 +141,18 @@ fun DebugView(
                 Text(text = "Current radius = $currentRadius")
             }
             Row {
-                LineChart(modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp),
-                    entries = listOf(
-                        Entry(1f,1f),
-                        Entry(2f,2f),
-                        Entry(3f,3f),
-                        Entry(4f,4f),
-                        Entry(5f,5f),
-                        ),
-                    xLabel = "time",
-                    yLabel = "data")
+//                LineChart(modifier = Modifier
+//                    .fillMaxWidth()
+//                    .height(200.dp),
+//                    entries = listOf(
+//                        Entry(1f,1f),
+//                        Entry(2f,2f),
+//                        Entry(3f,3f),
+//                        Entry(4f,4f),
+//                        Entry(5f,5f),
+//                        ),
+//                    xLabel = "time",
+//                    yLabel = "data")
             }
         }
     }
