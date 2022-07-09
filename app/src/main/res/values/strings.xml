@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">Mierzo puls</string>
+    <string name="app_pw_logo">logo pw</string>
+    <string name="app_history">Historia pomiarów</string>
+
+    <string name="btn_pulse_alg_NONE">Start</string>
+    <string name="btn_pulse_alg_CALIBRATION">Calibruję...</string>
+    <string name="btn_pulse_alg_REGISTRACTION">Rejestruję</string>
+    <string name="btn_pulse_alg_RESULT">Puls: <big><b>%1s</b></big></string>
+
+    <string name="study_chart_line1">surowe</string>
+    <string name="study_chart_line2">filtrowane</string>
+    <string name="study_chart_points">wzniesienia</string>
 </resources>
