@@ -32,6 +32,7 @@ class HomeViewModel(
     private val imageProcessing: ImageProcessing by inject(ImageProcessing::class.java)
     private val studyRepository: StudyRepository by inject(StudyRepository::class.java)
     private var lastTime by mutableStateOf(-1L)
+    var studies: List<Study> by mutableStateOf(studyRepository.readStudies(context))
     var timeStamps: List<Long> = listOf()
     var values: List<Double> = listOf()
     var algState: AlgState by mutableStateOf(AlgState.NONE)
@@ -80,6 +81,7 @@ class HomeViewModel(
         algState = AlgState.Result(study)
         studyOn = false
         studyRepository.save(context, study)
+        studies += study
         coroutineScope.launch {
             context.getCameraProvider().unbindAll()
             cameraLifecycle.doOnDestroy()
@@ -91,7 +93,6 @@ class HomeViewModel(
     }
 
     fun onHistory() {
-        Toast.makeText(context, "History button clicked !", Toast.LENGTH_SHORT).show()
         navController.navigate("history")
     }
 

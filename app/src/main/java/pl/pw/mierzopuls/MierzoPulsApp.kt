@@ -58,7 +58,7 @@ fun app() {
             Home(viewModel)
         }
         composable("history") {
-            //History(viewModel.studies.value)
+            History(viewModel.studies)
         }
         composable("debug") {
            // DebugView()

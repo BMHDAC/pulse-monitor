@@ -19,7 +19,9 @@ class StudyRepository {
 
     fun readStudies(context: Context): List<Study> {
         return context.applicationInfo.dataDir.let { dir ->
-            File(dir).listFiles().map { file ->
+            File(dir).listFiles { _, s ->
+                s.takeLast(5) == ".json"
+            }.map { file ->
                 file.readText().toStudy()
             }
         }
