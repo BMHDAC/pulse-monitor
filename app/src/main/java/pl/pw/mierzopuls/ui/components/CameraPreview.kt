@@ -25,7 +25,8 @@ fun CameraPreview(
                 )
             }
             onUseCase(
-                Preview.Builder().build().also { it.setSurfaceProvider(previewView.surfaceProvider) }
+                Preview.Builder().build()
+                    .also { it.setSurfaceProvider(previewView.surfaceProvider) }
             )
             previewView
         })

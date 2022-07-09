@@ -34,38 +34,46 @@ fun PulseBtn(modifier: Modifier = Modifier, viewModel: HomeViewModel) {
             if (algState is AlgState.Result) viewModel.dismissResult()
         }) {
         if (algState is AlgState.NONE || algState is AlgState.Result) {
-            Icon(modifier = Modifier.padding(8.dp),
+            Icon(
+                modifier = Modifier.padding(8.dp),
                 imageVector = Icons.Outlined.Favorite,
                 contentDescription = ""
             )
         }
-        Text(modifier = Modifier,
+        Text(
+            modifier = Modifier,
             fontFamily = FontFamily.Default,
             fontWeight = FontWeight.Bold,
             fontSize = 24.sp,
-            text = algState.buttonText())
+            text = algState.buttonText()
+        )
     }
 }
 
 @Preview
 @Composable
 fun PulseBtnPreview(onClick: () -> Unit = {}) {
-    Button(modifier = Modifier
-        .width(160.dp)
-        .padding(12.dp)
-        .aspectRatio(1f),
+    Button(
+        modifier = Modifier
+            .width(160.dp)
+            .padding(12.dp)
+            .aspectRatio(1f),
         onClick = onClick,
-        shape = CircleShape) {
-        Text(modifier = Modifier,
+        shape = CircleShape
+    ) {
+        Text(
+            modifier = Modifier,
             fontFamily = FontFamily.Default,
             fontWeight = FontWeight.Bold,
             fontSize = 24.sp,
-            text = "START")
+            text = "START"
+        )
     }
 }
+
 @Composable
 fun AlgState.buttonText(): String {
-    return when(this) {
+    return when (this) {
         AlgState.NONE -> stringResource(id = R.string.btn_pulse_alg_NONE)
         AlgState.Calibrate -> stringResource(id = R.string.btn_pulse_alg_CALIBRATION)
         is AlgState.Register -> stringResource(id = R.string.btn_pulse_alg_REGISTRACTION)

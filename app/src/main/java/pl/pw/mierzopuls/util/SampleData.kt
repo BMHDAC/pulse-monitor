@@ -13,24 +13,24 @@ object SampleData {
         Study(date = "25.07.2022_18:32", pulse = 96)
     )
     val exampleLine = listOf(
-        Entry(0f,0f),
-        Entry(1f,1f),
-        Entry(2f,2f),
-        Entry(3f,3f),
-        Entry(4f,4f),
-        Entry(5f,5f),
+        Entry(0f, 0f),
+        Entry(1f, 1f),
+        Entry(2f, 2f),
+        Entry(3f, 3f),
+        Entry(4f, 4f),
+        Entry(5f, 5f),
     )
     val exampleLine2 = listOf(
-        Entry(0f,6f),
-        Entry(1f,5f),
-        Entry(2f,4f),
-        Entry(3f,3f),
-        Entry(4f,2f),
-        Entry(5f,1f),
+        Entry(0f, 6f),
+        Entry(1f, 5f),
+        Entry(2f, 4f),
+        Entry(3f, 3f),
+        Entry(4f, 2f),
+        Entry(5f, 1f),
     )
     val examplePoints = listOf(
-        Entry(2f,1f),
-        Entry(3f,2f),
-        Entry(4f,5f)
+        Entry(2f, 1f),
+        Entry(3f, 2f),
+        Entry(4f, 5f)
     )
 }

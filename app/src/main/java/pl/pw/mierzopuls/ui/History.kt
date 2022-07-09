@@ -30,7 +30,7 @@ fun History(
         stickyHeader {
             LogoPW()
         }
-        items(studies) { study -> 
+        items(studies) { study ->
             StudyRow(study = study)
         }
     }
@@ -52,16 +52,20 @@ fun StudyRow(study: Study) {
         }) {
         Row(verticalAlignment = Alignment.Top) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(modifier = Modifier.padding(16.dp),
+                Text(
+                    modifier = Modifier.padding(16.dp),
                     text = "date: ${study.date}",
                     color = Color.DarkGray
                 )
-                Text(modifier = Modifier.padding(16.dp),
+                Text(
+                    modifier = Modifier.padding(16.dp),
                     text = "pulse: ${study.pulse}"
                 )
             }
-            Box(modifier = Modifier.padding(16.dp),
-                contentAlignment = Alignment.CenterEnd) {
+            Box(
+                modifier = Modifier.padding(16.dp),
+                contentAlignment = Alignment.CenterEnd
+            ) {
                 Icon(
                     imageVector = Icons.Outlined.ArrowDropDown,
                     contentDescription = ""
@@ -69,11 +73,14 @@ fun StudyRow(study: Study) {
             }
         }
         if (isExpanded) {
-            Row(modifier = Modifier
+            Row(
+                modifier = Modifier
                     .height(200.dp)
                     .fillMaxWidth(),
-                verticalAlignment = Alignment.Bottom) {
-                StudyChart(modifier = Modifier
+                verticalAlignment = Alignment.Bottom
+            ) {
+                StudyChart(
+                    modifier = Modifier
                         .height(200.dp)
                         .fillMaxWidth(),
                     study = study

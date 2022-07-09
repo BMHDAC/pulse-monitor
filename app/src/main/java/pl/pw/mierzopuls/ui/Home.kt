@@ -16,11 +16,15 @@ import pl.pw.mierzopuls.ui.components.PulseBtn
 fun Home(viewModel: HomeViewModel) {
     Box(modifier = Modifier.fillMaxSize()) {
         LogoPW(modifier = Modifier.align(Alignment.TopCenter))
-        PulseBtn(modifier = Modifier.align(Alignment.Center),
-            viewModel = viewModel)
-        Row(modifier = Modifier.align(Alignment.BottomCenter),
+        PulseBtn(
+            modifier = Modifier.align(Alignment.Center),
+            viewModel = viewModel
+        )
+        Row(
+            modifier = Modifier.align(Alignment.BottomCenter),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center) {
+            horizontalArrangement = Arrangement.Center
+        ) {
             Button(modifier = Modifier
                 .padding(16.dp)
                 .wrapContentWidth(Alignment.CenterHorizontally),

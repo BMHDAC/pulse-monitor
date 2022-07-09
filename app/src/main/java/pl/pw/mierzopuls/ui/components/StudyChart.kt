@@ -82,5 +82,5 @@ fun StudyChart(
 
             chart.invalidate()
             chart
-    })
+        })
 }

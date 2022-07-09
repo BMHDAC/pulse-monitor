@@ -1,172 +1,56 @@
 package pl.pw.mierzopuls.alg
 
-import android.graphics.Bitmap
 import android.graphics.ImageFormat
 import android.media.Image
 import android.util.Log
 import org.opencv.android.OpenCVLoader
-import org.opencv.android.Utils
 import org.opencv.core.Core
 import org.opencv.core.Core.countNonZero
 import org.opencv.core.CvType
 import org.opencv.core.Mat
 import org.opencv.core.Scalar
 import org.opencv.imgproc.Imgproc
-import kotlin.math.abs
-import kotlin.math.pow
-import kotlin.math.sqrt
 
 class ImageProcessing {
     var value: Int = -100
-    var limeStamps: List<Long> = listOf()
-    var values: List<Int> = listOf()
-
-    private var calibrationStart: Long? = null
-    private var redAcc: Double = 0.0
-    private var probeCounter = 0
 
     companion object {
         private const val LOG_TAG = "ImgProc"
-        const val CALIBRATION_TIME = 3000L
+
+
         init {
             if (!OpenCVLoader.initDebug()) {
                 Log.e(LOG_TAG, "Unable to load OpenCV! BE")
                 throw InstantiationException("OpenCV not loaded correctly!")
-            } else { Log.d(LOG_TAG,"OpenCV library loaded correctly") }
+            } else {
+                Log.d(LOG_TAG, "OpenCV library loaded correctly")
+            }
         }
-    }
-
-    fun analyseDebug(image: Image): Mat {
-        val mat = image.yuvToRgba()
-//        when (state) {
-//            AlgState.START -> {
-//                state = AlgState.CALIBRATION
-//
-//                calibrationStart = System.currentTimeMillis()
-//                Log.d(LOG_TAG, "Calibration start: $calibrationStart")
-//            }
-//            AlgState.CALIBRATION -> {
-//                val meanPixelValue = Core.mean(mat)
-//                Log.d(LOG_TAG, """
-//                        red: ${meanPixelValue.`val`[0]},
-//                        green: ${meanPixelValue.`val`[1]},
-//                        blue: ${meanPixelValue.`val`[2]}
-//                    """.trimIndent())
-//
-//                redAcc += meanPixelValue.`val`[0]
-//                probeCounter++
-//
-//                if (System.currentTimeMillis() - calibrationStart!! > CALIBRATION_TIME) {
-//                    calibration = Calibration(
-//                        (redAcc/probeCounter), 0.0, 0.0
-//                    )
-//                    state = AlgState.ANALYZE
-//                    Log.d(LOG_TAG, "Calibration = $calibration")
-//                }
-//            }
-//            AlgState.ANALYZE -> {
-//                val threshold = calibration!!.getThreshold(5)
-//                Core.inRange(mat, threshold.first, threshold.second, mat)
-//                value = countNonZero(mat)
-//
-////                val centerOfBlob = getCenterOfBlob(mat)
-////                Log.d(LOG_TAG, "center of blob: x = ${centerOfBlob.first}, y = ${centerOfBlob.second}")
-////
-////                currentRadius = calculateMeanRadius(mat, centerOfBlob)
-////                Log.d(LOG_TAG, "mean radius = $currentRadius")
-//            }
-//        }
-        return mat
     }
 
     fun processImage(algState: AlgState, image: Image): Double {
         val mat = image.yuvToRgba()
         return when (algState) {
             is AlgState.Calibrate -> {
-                return mean(mat).`val`[0]
+                mean(mat).`val`[0]
             }
             is AlgState.Register -> {
                 val threshold = algState.calibration.getThreshold(5)
                 Core.inRange(mat, threshold.first, threshold.second, mat)
 
-                return countNonZero(mat).toDouble()
+                countNonZero(mat).toDouble()
             }
             AlgState.NONE,
             is AlgState.Result -> throw IllegalStateException("Algorithm cannot be $algState")
         }
     }
 
-    fun matToBitmap(mat: Mat): Bitmap {
-        val bitmap = mat.let { it1 -> Bitmap.createBitmap(it1.cols(), mat.rows(), Bitmap.Config.ARGB_8888) }
-        Utils.matToBitmap(mat, bitmap)
-        return bitmap
-    }
-
-    fun getCenterOfBlob(mat: Mat): Pair<Int, Int> {
-        var centerOfBlob = 0.0 to 0.0
-        for (i in 0 until mat.rows()) {
-            for (j in 0 until mat.cols()) {
-                val value = if (mat.get(i,j)[0] == 0.0) 0 else 1
-                centerOfBlob = centerOfBlob.first + i * value to
-                        centerOfBlob.second + j * value
-            }
-        }
-        return (centerOfBlob.first / (mat.rows()*255)).toInt() to
-                (centerOfBlob.second / (mat.cols()*255)).toInt()
-    }
-
-    enum class Direction(val xOffset: Int, val yOffset: Int) {
-        `0`(1,0),
-        `45`(1,1),
-        `90`(0,1),
-        `135`(-1,1),
-        `180`(-1,0),
-        `225`(-1,-1),
-        `270`(0,-1),
-        `315`(1,-1),
-    }
-
-    private fun calculateSingleRadius(mat: Mat, center: Pair<Int, Int>, direction: Direction): Double? {
-        var stopPoint = center
-        while (true) {
-            stopPoint = stopPoint.first + direction.xOffset to stopPoint.second + direction.yOffset
-            if (stopPoint.first >= mat.rows() || stopPoint.first < 0 ||
-                stopPoint.second >= mat.cols() || stopPoint.second < 0) {
-                return null
-            }
-            if (mat.get(stopPoint.first, stopPoint.second)[0] == 0.0) {
-                return sqrt(
-                    abs(
-                        (center.first - stopPoint.first).toDouble()
-                    ).pow(2) + abs(
-                        (center.second - stopPoint.second).toDouble()
-                    ).pow(2)
-                )
-            }
-        }
-    }
-
-    fun calculateMeanRadius(mat: Mat, center: Pair<Int, Int>): Double {
-        val radiuses = Direction.values().map { calculateSingleRadius(mat,center,it) }
-
-        var acc = 0.0
-        var counter = 0
-        for (radius in radiuses) {
-            if (radius != null) {
-                acc += radius
-                counter++
-            }
-        }
-
-        return if (counter != 0) acc / counter else 0.0
-    }
-
     private fun Image.yuvToRgba(): Mat {
         val rgbaMat = Mat()
 
         if (format == ImageFormat.YUV_420_888
-            && planes.size == 3) {
-
+            && planes.size == 3
+        ) {
             val chromaPixelStride = planes[1].pixelStride
 
             if (chromaPixelStride == 2) { // Chroma channels are interleaved
@@ -236,7 +120,7 @@ class ImageProcessing {
      * val[0] -> red
      * val[1] -> green
      * val[2] -> blue
-    */
+     */
     private fun mean(src: Mat): Scalar = Core.mean(src)
 
 }

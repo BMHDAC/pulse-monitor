@@ -13,9 +13,10 @@ import pl.pw.mierzopuls.R
 
 @Composable
 fun LogoPW(modifier: Modifier = Modifier) {
-    Image(modifier = modifier
-        .padding(16.dp)
-        .fillMaxWidth(),
+    Image(
+        modifier = modifier
+            .padding(16.dp)
+            .fillMaxWidth(),
         painter = painterResource(id = R.drawable.pw_mech_logo),
         contentDescription = stringResource(id = R.string.app_pw_logo),
         contentScale = ContentScale.FillWidth

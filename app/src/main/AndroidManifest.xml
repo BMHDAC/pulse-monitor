@@ -3,11 +3,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="pl.pw.mierzopuls">
 
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-    <uses-permission android:name="android.permission.CAMERA"/>
-    <uses-feature android:name="android.hardware.camera"/>
-    <uses-feature android:name="android.hardware.camera.autofocus"/>
-    
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
+
     <application
         android:name=".MierzoPulsApp"
         android:allowBackup="true"
@@ -18,10 +19,10 @@
         android:theme="@style/Theme.MierzoPuls">
         <activity
             android:name=".MainActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
             android:exported="true"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
-            android:configChanges="keyboardHidden|orientation|screenSize"
             android:theme="@style/Theme.MierzoPuls.NoActionBar"
             tools:ignore="LockedOrientationActivity">
             <intent-filter>
