@@ -32,32 +32,10 @@ fun Home(viewModel: HomeViewModel) {
             horizontalArrangement = Arrangement.Center) {
             Button(modifier = Modifier
                 .padding(16.dp)
-                .wrapContentWidth(Alignment.Start),
+                .wrapContentWidth(Alignment.CenterHorizontally),
                 onClick = { viewModel.onHistory() }) {
                 Text(text = "Wyświetl pomiary")
             }
-            Button(modifier = Modifier
-                .padding(16.dp)
-                .wrapContentWidth(Alignment.End),
-                onClick = { viewModel.onStudy() })  {
-                Text(text = "Tryb debug")
-            }
         }
     }
-//    LaunchedEffect(viewModel.studyOn) {
-//        if (viewModel.studyOn) {
-//            viewModel.prepareCamera()
-//        } else {
-//            viewModel.dismissStudy()
-//        }
-//    }
-//    if (viewModel.algState != AlgState.NONE) {
-//        LaunchedEffect(true) {
-//            viewModel.prepareCamera()
-//        }
-//    } else {
-//        LaunchedEffect(true) {
-//            viewModel.dismissStudy()
-//        }
-//    }
 }

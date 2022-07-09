@@ -1,12 +1,18 @@
 package pl.pw.mierzopuls.ui
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.pm.PackageManager
 import android.media.Image
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.*
 import androidx.compose.runtime.*
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
@@ -26,7 +32,8 @@ class HomeViewModel(
     private val context: Context,
     private val lifecycleOwner: LifecycleOwner,
     private val navController: NavController,
-    private val coroutineScope: CoroutineScope
+    private val coroutineScope: CoroutineScope,
+    private val launcher: ManagedActivityResultLauncher<String, Boolean>
 ): ViewModel() {
     private val cameraLifecycle: CameraLifecycle by inject(CameraLifecycle::class.java)
     private val imageProcessing: ImageProcessing by inject(ImageProcessing::class.java)
@@ -40,6 +47,7 @@ class HomeViewModel(
 
 
     fun beginStudy() {
+        if (!checkPermissions()) return
         studyOn = true
         lastTime = System.currentTimeMillis()
         algState = AlgState.Calibrate
@@ -147,6 +155,19 @@ class HomeViewModel(
             camera.cameraControl.startFocusAndMetering(FocusMeteringAction.Builder(autoFocusPoint).disableAutoCancel().build())
         } catch (ex: Exception) {
             Log.e("CameraCapture", "Failed to bind camera use cases", ex)
+        }
+    }
+
+    private fun checkPermissions(): Boolean {
+        return when (PackageManager.PERMISSION_GRANTED) {
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.CAMERA
+            ) -> { true }
+            else -> {
+                launcher.launch(Manifest.permission.CAMERA)
+                false
+            }
         }
     }
 }

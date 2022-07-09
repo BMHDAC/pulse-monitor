@@ -1,6 +1,8 @@
 package pl.pw.mierzopuls
 
 import android.app.Application
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -10,13 +12,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import kotlinx.coroutines.CoroutineScope
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.GlobalContext
 import org.koin.dsl.module
 import pl.pw.mierzopuls.alg.ImageProcessing
 import pl.pw.mierzopuls.model.StudyRepository
-import pl.pw.mierzopuls.ui.DebugView
 import pl.pw.mierzopuls.ui.History
 import pl.pw.mierzopuls.ui.Home
 import pl.pw.mierzopuls.ui.HomeViewModel
@@ -52,16 +52,16 @@ fun app() {
     val lifecycleOwner = LocalLifecycleOwner.current
     val navController = rememberNavController()
     val coroutineScope = rememberCoroutineScope()
-    val viewModel = HomeViewModel(context, lifecycleOwner, navController, coroutineScope)
+    val launcher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) {}
+    val viewModel = HomeViewModel(context, lifecycleOwner, navController, coroutineScope, launcher)
     NavHost(navController = navController, startDestination = "home") {
         composable("home") {
             Home(viewModel)
         }
         composable("history") {
             History(viewModel.studies)
-        }
-        composable("debug") {
-           // DebugView()
         }
     }
 }
