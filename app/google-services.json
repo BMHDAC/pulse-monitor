@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "220940252915",
+    "project_id": "mierzo-puls",
+    "storage_bucket": "mierzo-puls.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:220940252915:android:6fbb7b63eeb3abee132986",
+        "android_client_info": {
+          "package_name": "pl.pw.mierzopuls"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "220940252915-tguh0tgc3vdvv74ss9vi0avfeite73ld.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "pl.pw.mierzopuls",
+            "certificate_hash": "766b92fffe1c14daa621a8e1b3aa083b932d3bb4"
+          }
+        },
+        {
+          "client_id": "220940252915-gv1ttsiot3mmdma3ocrn3h4ps2ltaaec.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBhY2cwFOnlej5OcI0xT1fQFR0zY1TOlG4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "220940252915-gv1ttsiot3mmdma3ocrn3h4ps2ltaaec.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
