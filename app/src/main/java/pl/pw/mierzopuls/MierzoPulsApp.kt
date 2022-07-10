@@ -12,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.firebase.analytics.FirebaseAnalytics
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.GlobalContext
 import org.koin.dsl.module
@@ -24,7 +25,7 @@ import pl.pw.mierzopuls.util.CameraLifecycle
 
 class MierzoPulsApp : Application() {
 
-    private val processingModule = module {
+    private val utilModule = module {
         single { CameraLifecycle() }
         single { ImageProcessing() }
     }
@@ -38,7 +39,7 @@ class MierzoPulsApp : Application() {
 
         GlobalContext.startKoin {
             androidContext(applicationContext)
-            modules(processingModule)
+            modules(utilModule)
             modules(repositoriesModule)
         }
     }

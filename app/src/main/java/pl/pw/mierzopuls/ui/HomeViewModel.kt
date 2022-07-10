@@ -15,6 +15,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
+import com.google.firebase.analytics.FirebaseAnalytics
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.koin.java.KoinJavaComponent.inject
@@ -24,6 +25,7 @@ import pl.pw.mierzopuls.alg.ImageProcessing
 import pl.pw.mierzopuls.alg.processSignal
 import pl.pw.mierzopuls.model.Study
 import pl.pw.mierzopuls.model.StudyRepository
+import pl.pw.mierzopuls.model.sendEvent
 import pl.pw.mierzopuls.util.CameraLifecycle
 import pl.pw.mierzopuls.util.getCameraProvider
 import java.util.concurrent.Executors
@@ -49,6 +51,8 @@ class HomeViewModel(
         if (!checkPermissions()) return
         lastTime = System.currentTimeMillis()
         algState = AlgState.Calibrate
+        values = listOf()
+        timeStamps = listOf()
         coroutineScope.launch {
             prepareCamera()
         }
@@ -77,13 +81,13 @@ class HomeViewModel(
     }
 
     private fun showResult() {
-        processSignal(values, timeStamps.map { (it - timeStamps[0]).toInt() }).let { study ->
-            algState = AlgState.Result(study)
-            studyRepository.save(context, study)
-            studies += study
-        }
-
         coroutineScope.launch {
+            processSignal(values, timeStamps.map { (it - timeStamps[0]).toInt() }).let { study ->
+                algState = AlgState.Result(study)
+                studyRepository.save(context, study)
+                studies += study
+                sendEvent(context, study)
+            }
             context.getCameraProvider().unbindAll()
             cameraLifecycle.doOnDestroy()
         }
@@ -97,8 +101,9 @@ class HomeViewModel(
             setAnalyzer(Executors.newSingleThreadExecutor()) { imageProxy ->
                 val image: Image = imageProxy.image!!
                 when (algState) {
-                    is AlgState.NONE -> {
-                        Log.w("ImageAnalyser", "Alg state = NONE")
+                    is AlgState.NONE,
+                    is AlgState.Result-> {
+                        Log.w("ImageAnalyser", "Alg state = ${algState.javaClass}")
                     }
                     is AlgState.Calibrate -> {
                         values += imageProcessing.processImage(algState, image)

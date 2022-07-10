@@ -9,8 +9,7 @@ import java.util.*
 fun processSignal(raw: List<Double>, times: List<Int>): Study {
     val meanRaw = raw.average()
     val baseLineRemoval = raw.map { it - meanRaw }
-    val filteredSignal =
-        firFilter(baseLineRemoval.toDoubleArray(), times.map { it.toDouble() }.toDoubleArray())
+    val filteredSignal = firFilter(baseLineRemoval.toDoubleArray(), times.map { it.toDouble() }.toDoubleArray())
     val peaks = peakFinder(filteredSignal)
     val pulse = calculatePulse(times, peaks)
 
