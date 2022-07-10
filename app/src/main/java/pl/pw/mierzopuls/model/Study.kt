@@ -23,6 +23,12 @@ data class Study(
     val peaks: List<Int> = listOf()
 )
 
+fun Study.fps(): Int {
+    val frames = this.times.size.toDouble()
+    val periodMs = (this.times.last() - this.times.first()).toDouble()
+    return (1000.0 * frames / periodMs).toInt()
+}
+
 fun Study.toJson(): String = Gson().toJson(this)
 
 fun String.toStudy(): Study = Gson().fromJson(this, Study::class.java)

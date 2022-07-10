@@ -40,12 +40,13 @@ class HomeViewModel(
     private val cameraLifecycle: CameraLifecycle by inject(CameraLifecycle::class.java)
     private val imageProcessing: ImageProcessing by inject(ImageProcessing::class.java)
     private val studyRepository: StudyRepository by inject(StudyRepository::class.java)
-    var studies: List<Study> by mutableStateOf(studyRepository.readStudies(context)) // TODO: fetch for studies async
-    var algState: AlgState by mutableStateOf(AlgState.NONE)
-
     private var lastTime by mutableStateOf(-1L)
     private var timeStamps: List<Long> = listOf()
     private var values: List<Double> = listOf()
+
+    var studies: List<Study> by mutableStateOf(studyRepository.readStudies(context)) // TODO: fetch for studies async
+    var algState: AlgState by mutableStateOf(AlgState.NONE)
+    var openInstruction by mutableStateOf(false)
 
     fun beginStudy() {
         if (!checkPermissions()) return
