@@ -75,7 +75,7 @@ fun PulseBtnPreview(onClick: () -> Unit = {}) {
 fun AlgState.buttonText(): String {
     return when (this) {
         AlgState.NONE -> stringResource(id = R.string.btn_pulse_alg_NONE)
-        AlgState.Calibrate -> stringResource(id = R.string.btn_pulse_alg_CALIBRATION)
+        is AlgState.CountDown -> stringResource(id = R.string.btn_pulse_alg_COUNTDOWN, this.count)
         is AlgState.Register -> stringResource(id = R.string.btn_pulse_alg_REGISTRACTION)
         is AlgState.Result -> stringResource(id = R.string.btn_pulse_alg_RESULT, this.study.pulse)
     }

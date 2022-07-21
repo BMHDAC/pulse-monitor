@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.media.Image
+import android.os.CountDownTimer
 import android.util.Log
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.camera.core.*
@@ -40,6 +41,7 @@ class HomeViewModel(
     private val cameraLifecycle: CameraLifecycle by inject(CameraLifecycle::class.java)
     private val imageProcessing: ImageProcessing by inject(ImageProcessing::class.java)
     private val studyRepository: StudyRepository by inject(StudyRepository::class.java)
+    private val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
     private var lastTime by mutableStateOf(-1L)
     private var timeStamps: List<Long> = listOf()
     private var values: List<Double> = listOf()
@@ -51,12 +53,20 @@ class HomeViewModel(
     fun beginStudy() {
         if (!checkPermissions()) return
         lastTime = System.currentTimeMillis()
-        algState = AlgState.Calibrate
         values = listOf()
         timeStamps = listOf()
         coroutineScope.launch {
             prepareCamera()
         }
+        algState = AlgState.CountDown(3)
+        object : CountDownTimer(3000, 1000) {
+            override fun onTick(millisUntilFinished: Long) {
+                algState = AlgState.CountDown((millisUntilFinished / 1000 + 1).toInt())
+            }
+
+            override fun onFinish() = beginRegistration()
+
+        }.start()
         cameraLifecycle.doOnStart()
     }
 
@@ -70,13 +80,7 @@ class HomeViewModel(
 
     private fun beginRegistration() {
         lastTime = System.currentTimeMillis()
-        algState = AlgState.Register(
-            Calibration(
-                values.average(),
-                0.0,
-                0.0
-            )
-        )
+        algState = AlgState.Register
         values = listOf()
         timeStamps = listOf()
     }
@@ -102,16 +106,10 @@ class HomeViewModel(
             setAnalyzer(Executors.newSingleThreadExecutor()) { imageProxy ->
                 val image: Image = imageProxy.image!!
                 when (algState) {
+                    is AlgState.CountDown -> {}
                     is AlgState.NONE,
                     is AlgState.Result-> {
                         Log.w("ImageAnalyser", "Alg state = ${algState.javaClass}")
-                    }
-                    is AlgState.Calibrate -> {
-                        values += imageProcessing.processImage(algState, image)
-
-                        if (System.currentTimeMillis() - lastTime > AlgState.CALIBRATION_TIME) {
-                            beginRegistration()
-                        }
                     }
                     is AlgState.Register -> {
                         values += imageProcessing.processImage(algState, image)
@@ -125,8 +123,6 @@ class HomeViewModel(
                 imageProxy.close()
             }
         }
-
-    private val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
     private suspend fun prepareCamera() {
         val cameraProvider = context.getCameraProvider()
@@ -145,6 +141,7 @@ class HomeViewModel(
             camera.cameraControl.startFocusAndMetering(
                 FocusMeteringAction.Builder(autoFocusPoint).disableAutoCancel().build()
             )
+            Log.d("prepareCamera", "finished preparation")
         } catch (ex: Exception) {
             Log.e("CameraCapture", "Failed to bind camera use cases", ex)
         }

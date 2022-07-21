@@ -31,16 +31,11 @@ class ImageProcessing {
     fun processImage(algState: AlgState, image: Image): Double {
         val mat = image.yuvToRgba()
         return when (algState) {
-            is AlgState.Calibrate -> {
+            is AlgState.Register -> {
                 mean(mat).`val`[0]
             }
-            is AlgState.Register -> {
-                val threshold = algState.calibration.getThreshold(5)
-                Core.inRange(mat, threshold.first, threshold.second, mat)
-
-                countNonZero(mat).toDouble()
-            }
             AlgState.NONE,
+            is AlgState.CountDown,
             is AlgState.Result -> throw IllegalStateException("Algorithm cannot be $algState")
         }
     }
