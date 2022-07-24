@@ -2,6 +2,7 @@ package pl.pw.mierzopuls.ui
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Application
 import android.content.Context
 import android.content.pm.PackageManager
 import android.media.Image
@@ -13,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
@@ -32,12 +34,8 @@ import pl.pw.mierzopuls.util.getCameraProvider
 import java.util.concurrent.Executors
 
 class HomeViewModel(
-    private val context: Context,
-    private val lifecycleOwner: LifecycleOwner,
-    private val navController: NavController,
-    private val coroutineScope: CoroutineScope,
-    private val launcher: ManagedActivityResultLauncher<String, Boolean>
-) : ViewModel() {
+    application: Application,
+) : AndroidViewModel(application) {
     private val cameraLifecycle: CameraLifecycle by inject(CameraLifecycle::class.java)
     private val imageProcessing: ImageProcessing by inject(ImageProcessing::class.java)
     private val studyRepository: StudyRepository by inject(StudyRepository::class.java)
@@ -46,26 +44,24 @@ class HomeViewModel(
     private var timeStamps: List<Long> = listOf()
     private var values: List<Double> = listOf()
 
-    var studies: List<Study> by mutableStateOf(studyRepository.readStudies(context)) // TODO: fetch for studies async
+    var studies: List<Study> by mutableStateOf(studyRepository.readStudies(application)) // TODO: fetch for studies async
     var algState: AlgState by mutableStateOf(AlgState.NONE)
     var openInstruction by mutableStateOf(false)
 
-    fun beginStudy() {
-        if (!checkPermissions()) return
+    fun beginStudy(launcher: ManagedActivityResultLauncher<String, Boolean>, coroutineScope: CoroutineScope) {
+        if (!checkPermissions(launcher)) return
         lastTime = System.currentTimeMillis()
         values = listOf()
         timeStamps = listOf()
         coroutineScope.launch {
-            prepareCamera()
+            prepareCamera(getApplication())
         }
         algState = AlgState.CountDown(3)
         object : CountDownTimer(3000, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 algState = AlgState.CountDown((millisUntilFinished / 1000 + 1).toInt())
             }
-
-            override fun onFinish() = beginRegistration()
-
+            override fun onFinish() = beginRegistration(coroutineScope)
         }.start()
         cameraLifecycle.doOnStart()
     }
@@ -74,19 +70,25 @@ class HomeViewModel(
         algState = AlgState.NONE
     }
 
-    fun onHistory() {
-        navController.navigate("history")
-    }
+//    fun onHistory() {
+//        navController.navigate("history")
+//    }
 
-    private fun beginRegistration() {
+    private fun beginRegistration(coroutineScope: CoroutineScope) {
         lastTime = System.currentTimeMillis()
         algState = AlgState.Register
         values = listOf()
         timeStamps = listOf()
+        object : CountDownTimer(AlgState.REGISTRATION_TIME, AlgState.REGISTRATION_TIME) {
+            override fun onTick(millisUntilFinished: Long) = Unit
+
+            override fun onFinish() = showResult(coroutineScope)
+        }.start()
     }
 
-    private fun showResult() {
+    private fun showResult(coroutineScope: CoroutineScope) {
         coroutineScope.launch {
+            val context: Context = getApplication()
             processSignal(values, timeStamps.map { (it - timeStamps[0]).toInt() }).let { study ->
                 algState = AlgState.Result(study)
                 studyRepository.save(context, study)
@@ -114,17 +116,13 @@ class HomeViewModel(
                     is AlgState.Register -> {
                         values += imageProcessing.processImage(algState, image)
                         timeStamps += System.currentTimeMillis() - lastTime
-
-                        if (System.currentTimeMillis() - lastTime > AlgState.REGISTRATION_TIME) {
-                            showResult()
-                        }
                     }
                 }
                 imageProxy.close()
             }
         }
 
-    private suspend fun prepareCamera() {
+    private suspend fun prepareCamera(context: Context) {
         val cameraProvider = context.getCameraProvider()
         try {
             // Must unbind the use-cases before rebinding them.
@@ -132,25 +130,26 @@ class HomeViewModel(
             val camera = cameraProvider.bindToLifecycle(
                 cameraLifecycle, cameraSelector, imageAnalysisUseCase
             )
+            camera.cameraControl.enableTorch(true)
+            Log.d("CameraPrep", "torch enabled")
+
             val factory: MeteringPointFactory = SurfaceOrientedMeteringPointFactory(
                 10F, 10F
             )
             val autoFocusPoint = factory.createPoint(1F, 1F)
-
-            camera.cameraControl.enableTorch(true)
             camera.cameraControl.startFocusAndMetering(
                 FocusMeteringAction.Builder(autoFocusPoint).disableAutoCancel().build()
             )
-            Log.d("prepareCamera", "finished preparation")
+            Log.d("CameraPrep", "autofocus disabled")
         } catch (ex: Exception) {
             Log.e("CameraCapture", "Failed to bind camera use cases", ex)
         }
     }
 
-    private fun checkPermissions(): Boolean {
+    private fun checkPermissions(launcher: ManagedActivityResultLauncher<String, Boolean>): Boolean {
         return when (PackageManager.PERMISSION_GRANTED) {
             ContextCompat.checkSelfPermission(
-                context,
+                getApplication(),
                 Manifest.permission.CAMERA
             ) -> {
                 true

@@ -13,7 +13,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.firebase.analytics.FirebaseAnalytics
+import org.koin.android.ext.koin.androidApplication
 import org.koin.android.ext.koin.androidContext
+import org.koin.androidx.compose.inject
 import org.koin.core.context.GlobalContext
 import org.koin.dsl.module
 import pl.pw.mierzopuls.alg.ImageProcessing
@@ -34,6 +36,10 @@ class MierzoPulsApp : Application() {
         single { StudyRepository() }
     }
 
+    private val viewModelModule = module {
+        single { HomeViewModel(androidApplication()) }
+    }
+
     override fun onCreate() {
         super.onCreate()
 
@@ -41,6 +47,7 @@ class MierzoPulsApp : Application() {
             androidContext(applicationContext)
             modules(utilModule)
             modules(repositoriesModule)
+            modules(viewModelModule)
         }
     }
 }
@@ -49,20 +56,13 @@ class MierzoPulsApp : Application() {
 @ExperimentalFoundationApi
 @Composable
 fun app() {
-    val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
     val navController = rememberNavController()
-    val coroutineScope = rememberCoroutineScope()
-    val launcher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) {}
-    val viewModel = HomeViewModel(context, lifecycleOwner, navController, coroutineScope, launcher)
     NavHost(navController = navController, startDestination = "home") {
         composable("home") {
-            Home(viewModel)
+            Home(navController)
         }
         composable("history") {
-            History(viewModel.studies)
+            History()
         }
     }
 }

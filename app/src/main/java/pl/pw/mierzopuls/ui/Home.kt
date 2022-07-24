@@ -14,13 +14,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import org.koin.androidx.compose.inject
 import pl.pw.mierzopuls.R
 import pl.pw.mierzopuls.ui.components.InstructionDialog
 import pl.pw.mierzopuls.ui.components.LogoPW
 import pl.pw.mierzopuls.ui.components.PulseBtn
 
 @Composable
-fun Home(viewModel: HomeViewModel) {
+fun Home(navController: NavController) {
+    val viewModel: HomeViewModel by inject()
     Box(modifier = Modifier.fillMaxSize()) {
         LogoPW(modifier = Modifier.align(Alignment.TopCenter))
         IconButton(onClick = { viewModel.openInstruction = true} ) {
@@ -42,7 +45,7 @@ fun Home(viewModel: HomeViewModel) {
             Button(modifier = Modifier
                 .padding(16.dp)
                 .wrapContentWidth(Alignment.CenterHorizontally),
-                onClick = { viewModel.onHistory() }) {
+                onClick = { navController.navigate("history") }) {
                 Text(text = stringResource(id = R.string.app_history))
             }
         }

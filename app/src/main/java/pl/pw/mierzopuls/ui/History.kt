@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import org.koin.androidx.compose.inject
 import pl.pw.mierzopuls.model.Study
 import pl.pw.mierzopuls.ui.components.LogoPW
 import pl.pw.mierzopuls.ui.components.StudyChart
@@ -23,14 +24,13 @@ import pl.pw.mierzopuls.util.SampleData
 
 @ExperimentalFoundationApi
 @Composable
-fun History(
-    studies: List<Study>
-) {
+fun History() {
+    val viewModel: HomeViewModel by inject()
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         stickyHeader {
             LogoPW()
         }
-        items(studies) { study ->
+        items(viewModel.studies) { study ->
             StudyRow(study = study)
         }
     }
