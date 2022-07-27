@@ -38,9 +38,8 @@ class HomeViewModel(
     private val imageProcessing: ImageProcessing by inject(ImageProcessing::class.java)
     private val studyRepository: StudyRepository by inject(StudyRepository::class.java)
     private val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-    private var lastTime by mutableStateOf(-1L)
-    private var timeStamps: List<Long> = listOf()
-    private var values: List<Double> = listOf()
+    private var timeStamps: MutableList<Long> = mutableListOf()
+    private var values: MutableList<Double> = mutableListOf()
 
     var studies: List<Study> by mutableStateOf(studyRepository.readStudies(application).sortByDate()) // TODO: fetch for studies async
     var algState: AlgState by mutableStateOf(AlgState.NONE)
@@ -48,53 +47,54 @@ class HomeViewModel(
 
     fun beginStudy(launcher: ManagedActivityResultLauncher<String, Boolean>, coroutineScope: CoroutineScope) {
         if (!checkPermissions(launcher)) return
-        lastTime = System.currentTimeMillis()
-        values = listOf()
-        timeStamps = listOf()
+        values = mutableListOf()
+        timeStamps = mutableListOf()
         coroutineScope.launch {
             prepareCamera(getApplication())
         }
-        algState = AlgState.Prepare(3)
-        object : CountDownTimer(3000, 1000) {
+        algState = AlgState.Prepare(2)
+        object : CountDownTimer(2000, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 algState = AlgState.Prepare((millisUntilFinished / 1000 + 1).toInt())
             }
-            override fun onFinish() = beginRegistration(coroutineScope)
+            override fun onFinish() = beginCalibration(coroutineScope)
         }.start()
         cameraLifecycle.doOnStart()
+    }
+
+    fun beginCalibration(coroutineScope: CoroutineScope) {
+        algState = AlgState.Calibrate
+        object : CountDownTimer(Calibration.CALIBRATION_MS, Calibration.CALIBRATION_MS) {
+            override fun onTick(millisUntilFinished: Long) = Unit
+            override fun onFinish() = beginRegistration(Calibration.getCalibration(values), coroutineScope)
+        }.start()
     }
 
     fun dismissResult() {
         algState = AlgState.NONE
     }
 
-//    fun onHistory() {
-//        navController.navigate("history")
-//    }
-
-    private fun beginRegistration(coroutineScope: CoroutineScope) {
-        lastTime = System.currentTimeMillis()
-        algState = AlgState.Register(Calibration(0.0,0.0,0.0))
-        values = listOf()
-        timeStamps = listOf()
+    private fun beginRegistration(calibration: Calibration, coroutineScope: CoroutineScope) {
+        algState = AlgState.Register(calibration)
+        values = mutableListOf()
+        timeStamps = mutableListOf()
         object : CountDownTimer(AlgState.REGISTRATION_TIME, AlgState.REGISTRATION_TIME) {
             override fun onTick(millisUntilFinished: Long) = Unit
-
             override fun onFinish() = showResult(coroutineScope)
         }.start()
     }
 
     private fun showResult(coroutineScope: CoroutineScope) {
+        val context: Context = getApplication()
         coroutineScope.launch {
-            val context: Context = getApplication()
-            processSignal(values, timeStamps.map { (it - timeStamps[0]).toInt() }).let { study ->
-                algState = AlgState.Result(study)
-                studyRepository.save(context, study)
-                studies = study + studies
-                sendEvent(context, study)
-            }
             context.getCameraProvider().unbindAll()
             cameraLifecycle.doOnDestroy()
+        }
+        processSignal(values, timeStamps.map { (it - timeStamps[0]).toInt() }).let { study ->
+            algState = AlgState.Result(study)
+            studyRepository.save(context, study)
+            studies = study + studies
+            sendEvent(context, study)
         }
     }
 
@@ -103,13 +103,15 @@ class HomeViewModel(
         when (algState) {
             is AlgState.Prepare -> {}
             is AlgState.NONE,
-            is AlgState.Calibrate,
             is AlgState.Result-> {
                 Log.w("ImageAnalyser", "Alg state = ${algState.javaClass}")
             }
+            is AlgState.Calibrate -> {
+                values += imageProcessing.processImage(algState, image)
+            }
             is AlgState.Register -> {
                 values += imageProcessing.processImage(algState, image)
-                timeStamps += System.currentTimeMillis() - lastTime
+                timeStamps += System.currentTimeMillis()
             }
         }
     }

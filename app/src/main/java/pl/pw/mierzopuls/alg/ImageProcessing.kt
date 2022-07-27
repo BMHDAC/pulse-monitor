@@ -49,14 +49,17 @@ class ImageProcessing {
         val mat = image.yuvToRgba()
         return when (algState) {
             is AlgState.Register -> {
-                mean(mat).`val`[0]
+                val threshold = algState.calibration.getThreshold(5)
+                Core.inRange(mat, threshold.first, threshold.second, mat)
+
+                countNonZero(mat).toDouble()
             }
-            AlgState.NONE,
-            is AlgState.Result -> throw IllegalStateException("Algorithm cannot be $algState")
             AlgState.Calibrate -> {
                 mean(mat).`val`[0]
             }
-            is AlgState.Prepare -> TODO()
+            AlgState.NONE,
+            is AlgState.Prepare,
+            is AlgState.Result -> throw IllegalStateException("Algorithm cannot be $algState. Maybe analyser have not been close properly.")
         }
     }
 
