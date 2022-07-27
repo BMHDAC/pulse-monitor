@@ -15,4 +15,6 @@
     <string name="instruction_title">Instrukcja</string>
     <string name="instruction_show_again">Nie pokazuj więcej</string>
     <string name="instruction_ok">OK !</string>
+
+    <string name="not_implemented">Not implemented</string>
 </resources>

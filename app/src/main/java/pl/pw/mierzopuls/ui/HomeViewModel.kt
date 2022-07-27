@@ -54,10 +54,10 @@ class HomeViewModel(
         coroutineScope.launch {
             prepareCamera(getApplication())
         }
-        algState = AlgState.CountDown(3)
+        algState = AlgState.Prepare(3)
         object : CountDownTimer(3000, 1000) {
             override fun onTick(millisUntilFinished: Long) {
-                algState = AlgState.CountDown((millisUntilFinished / 1000 + 1).toInt())
+                algState = AlgState.Prepare((millisUntilFinished / 1000 + 1).toInt())
             }
             override fun onFinish() = beginRegistration(coroutineScope)
         }.start()
@@ -74,7 +74,7 @@ class HomeViewModel(
 
     private fun beginRegistration(coroutineScope: CoroutineScope) {
         lastTime = System.currentTimeMillis()
-        algState = AlgState.Register
+        algState = AlgState.Register(Calibration(0.0,0.0,0.0))
         values = listOf()
         timeStamps = listOf()
         object : CountDownTimer(AlgState.REGISTRATION_TIME, AlgState.REGISTRATION_TIME) {
@@ -99,26 +99,20 @@ class HomeViewModel(
     }
 
     @SuppressLint("UnsafeOptInUsageError")
-    private val imageAnalysisUseCase = ImageAnalysis.Builder()
-        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-        .build()
-        .apply {
-            setAnalyzer(Executors.newSingleThreadExecutor()) { imageProxy ->
-                val image: Image = imageProxy.image!!
-                when (algState) {
-                    is AlgState.CountDown -> {}
-                    is AlgState.NONE,
-                    is AlgState.Result-> {
-                        Log.w("ImageAnalyser", "Alg state = ${algState.javaClass}")
-                    }
-                    is AlgState.Register -> {
-                        values += imageProcessing.processImage(algState, image)
-                        timeStamps += System.currentTimeMillis() - lastTime
-                    }
-                }
-                imageProxy.close()
+    private val imageAnalysisUseCase = imageProcessing.imageAnalysisUseCase { image ->
+        when (algState) {
+            is AlgState.Prepare -> {}
+            is AlgState.NONE,
+            is AlgState.Calibrate,
+            is AlgState.Result-> {
+                Log.w("ImageAnalyser", "Alg state = ${algState.javaClass}")
+            }
+            is AlgState.Register -> {
+                values += imageProcessing.processImage(algState, image)
+                timeStamps += System.currentTimeMillis() - lastTime
             }
         }
+    }
 
     private suspend fun prepareCamera(context: Context) {
         val cameraProvider = context.getCameraProvider()
