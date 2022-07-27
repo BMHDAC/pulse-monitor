@@ -3,7 +3,7 @@ package pl.pw.mierzopuls.alg
 import com.github.psambit9791.jdsp.filter.FIRWin1
 import com.github.psambit9791.jdsp.signal.peaks.FindPeak
 import pl.pw.mierzopuls.model.Study
-import pl.pw.mierzopuls.util.formatStudyDate
+import pl.pw.mierzopuls.model.formatStudyDate
 import java.util.*
 
 fun processSignal(raw: List<Double>, times: List<Int>): Study {

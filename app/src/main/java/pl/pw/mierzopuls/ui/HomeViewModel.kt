@@ -26,9 +26,7 @@ import pl.pw.mierzopuls.alg.AlgState
 import pl.pw.mierzopuls.alg.Calibration
 import pl.pw.mierzopuls.alg.ImageProcessing
 import pl.pw.mierzopuls.alg.processSignal
-import pl.pw.mierzopuls.model.Study
-import pl.pw.mierzopuls.model.StudyRepository
-import pl.pw.mierzopuls.model.sendEvent
+import pl.pw.mierzopuls.model.*
 import pl.pw.mierzopuls.util.CameraLifecycle
 import pl.pw.mierzopuls.util.getCameraProvider
 import java.util.concurrent.Executors
@@ -44,7 +42,7 @@ class HomeViewModel(
     private var timeStamps: List<Long> = listOf()
     private var values: List<Double> = listOf()
 
-    var studies: List<Study> by mutableStateOf(studyRepository.readStudies(application)) // TODO: fetch for studies async
+    var studies: List<Study> by mutableStateOf(studyRepository.readStudies(application).sortByDate()) // TODO: fetch for studies async
     var algState: AlgState by mutableStateOf(AlgState.NONE)
     var openInstruction by mutableStateOf(false)
 
@@ -92,7 +90,7 @@ class HomeViewModel(
             processSignal(values, timeStamps.map { (it - timeStamps[0]).toInt() }).let { study ->
                 algState = AlgState.Result(study)
                 studyRepository.save(context, study)
-                studies += study
+                studies = study + studies
                 sendEvent(context, study)
             }
             context.getCameraProvider().unbindAll()
