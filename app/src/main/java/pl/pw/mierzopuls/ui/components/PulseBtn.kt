@@ -25,21 +25,17 @@ import pl.pw.mierzopuls.alg.AlgState
 import pl.pw.mierzopuls.ui.HomeViewModel
 
 @Composable
-fun PulseBtn(modifier: Modifier = Modifier, viewModel: HomeViewModel) {
-    val algState = viewModel.algState
-    val launcher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) {}
-    val coroutineScope = rememberCoroutineScope()
+fun PulseBtn(modifier: Modifier = Modifier,
+             algState: AlgState,
+             onClick: () -> Unit
+) {
     Button(modifier = modifier
         .width(if (algState is AlgState.NONE) 180.dp else 270.dp)
         .padding(20.dp)
         .aspectRatio(1f),
         shape = CircleShape,
-        onClick = {
-            if (algState is AlgState.NONE) viewModel.beginStudy(launcher, coroutineScope)
-            if (algState is AlgState.Result) viewModel.dismissResult()
-        }) {
+        onClick = onClick
+    ) {
         if (algState is AlgState.NONE || algState is AlgState.Result) {
             Icon(
                 modifier = Modifier.padding(8.dp),
@@ -51,7 +47,7 @@ fun PulseBtn(modifier: Modifier = Modifier, viewModel: HomeViewModel) {
             modifier = Modifier,
             fontFamily = FontFamily.Default,
             fontWeight = FontWeight.Bold,
-            fontSize = 24.sp,
+            fontSize = if (algState is AlgState.Result) 32.sp else 24.sp,
             text = algState.buttonText()
         )
     }
@@ -84,7 +80,7 @@ fun AlgState.buttonText(): String {
         AlgState.NONE -> stringResource(id = R.string.btn_pulse_alg_NONE)
         is AlgState.Register -> stringResource(id = R.string.btn_pulse_alg_REGISTRACTION)
         is AlgState.Result -> stringResource(id = R.string.btn_pulse_alg_RESULT, this.study.pulse)
-        AlgState.Calibrate -> stringResource(id = R.string.not_implemented)
-        is AlgState.Prepare -> stringResource(id = R.string.btn_pulse_alg_COUNTDOWN, this.count)
+        is AlgState.Calibrate -> stringResource(id = R.string.btn_pulse_alg_CALIBRATION)
+        AlgState.DEBUG -> stringResource(id = R.string.not_implemented)
     }
 }

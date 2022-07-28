@@ -5,6 +5,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -56,6 +57,7 @@ class MierzoPulsApp : Application() {
 @ExperimentalFoundationApi
 @Composable
 fun app() {
+    val viewModel: HomeViewModel by inject()
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "home") {
         composable("home") {
@@ -64,5 +66,8 @@ fun app() {
         composable("history") {
             History()
         }
+    }
+    LaunchedEffect(key1 = viewModel) {
+        viewModel.initRepository()
     }
 }

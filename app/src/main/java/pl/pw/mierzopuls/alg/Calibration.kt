@@ -21,8 +21,6 @@ data class Calibration(
         )
     }
     companion object {
-        const val CALIBRATION_MS = 4000L
-
         fun getCalibration(values: List<Double>): Calibration {
             return Calibration(
                 values.average(),

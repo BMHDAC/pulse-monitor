@@ -5,7 +5,6 @@ import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
 import android.content.pm.PackageManager
-import android.media.Image
 import android.os.CountDownTimer
 import android.util.Log
 import androidx.activity.compose.ManagedActivityResultLauncher
@@ -15,21 +14,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModel
-import androidx.navigation.NavController
-import com.google.firebase.analytics.FirebaseAnalytics
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.koin.java.KoinJavaComponent.inject
 import pl.pw.mierzopuls.alg.AlgState
+import pl.pw.mierzopuls.alg.AlgState.Calibrate.Companion.CALIBRATION_MS
+import pl.pw.mierzopuls.alg.AlgState.Register.Companion.REGISTRATION_TIME
 import pl.pw.mierzopuls.alg.Calibration
 import pl.pw.mierzopuls.alg.ImageProcessing
 import pl.pw.mierzopuls.alg.processSignal
 import pl.pw.mierzopuls.model.*
 import pl.pw.mierzopuls.util.CameraLifecycle
 import pl.pw.mierzopuls.util.getCameraProvider
-import java.util.concurrent.Executors
+import pl.pw.mierzopuls.util.saveMatrixData
 
 class HomeViewModel(
     application: Application,
@@ -41,44 +38,51 @@ class HomeViewModel(
     private var timeStamps: MutableList<Long> = mutableListOf()
     private var values: MutableList<Double> = mutableListOf()
 
-    var studies: List<Study> by mutableStateOf(studyRepository.readStudies(application).sortByDate()) // TODO: fetch for studies async
+    var studies: List<Study> by mutableStateOf(listOf())
     var algState: AlgState by mutableStateOf(AlgState.NONE)
     var openInstruction by mutableStateOf(false)
 
+    fun initRepository() {
+        studies = studyRepository.readStudies(getApplication()).sortByDate()
+    }
+
     fun beginStudy(launcher: ManagedActivityResultLauncher<String, Boolean>, coroutineScope: CoroutineScope) {
         if (!checkPermissions(launcher)) return
-        values = mutableListOf()
-        timeStamps = mutableListOf()
+        clearData()
         coroutineScope.launch {
             prepareCamera(getApplication())
         }
-        algState = AlgState.Prepare(2)
-        object : CountDownTimer(2000, 1000) {
-            override fun onTick(millisUntilFinished: Long) {
-                algState = AlgState.Prepare((millisUntilFinished / 1000 + 1).toInt())
-            }
-            override fun onFinish() = beginCalibration(coroutineScope)
-        }.start()
+        beginCalibration(coroutineScope)
         cameraLifecycle.doOnStart()
     }
 
     fun beginCalibration(coroutineScope: CoroutineScope) {
-        algState = AlgState.Calibrate
-        object : CountDownTimer(Calibration.CALIBRATION_MS, Calibration.CALIBRATION_MS) {
-            override fun onTick(millisUntilFinished: Long) = Unit
+        algState = AlgState.Calibrate()
+        object : CountDownTimer(CALIBRATION_MS, CALIBRATION_MS.div(6)) {
+            override fun onTick(millisUntilFinished: Long) {
+                if (algState is AlgState.NONE) return this.cancel()
+                if ((algState as AlgState.Calibrate).isCorrupted) {
+                    this.cancel()
+                    clearData()
+                    beginCalibration(coroutineScope)
+                }
+            }
             override fun onFinish() = beginRegistration(Calibration.getCalibration(values), coroutineScope)
         }.start()
     }
 
-    fun dismissResult() {
-        algState = AlgState.NONE
+    fun dismissStudy(coroutineScope: CoroutineScope) {
+        coroutineScope.launch {
+            (getApplication() as Context).getCameraProvider().unbindAll()
+            cameraLifecycle.doOnDestroy()
+            algState = AlgState.NONE
+        }
     }
 
     private fun beginRegistration(calibration: Calibration, coroutineScope: CoroutineScope) {
         algState = AlgState.Register(calibration)
-        values = mutableListOf()
-        timeStamps = mutableListOf()
-        object : CountDownTimer(AlgState.REGISTRATION_TIME, AlgState.REGISTRATION_TIME) {
+        clearData()
+        object : CountDownTimer(REGISTRATION_TIME, REGISTRATION_TIME) {
             override fun onTick(millisUntilFinished: Long) = Unit
             override fun onFinish() = showResult(coroutineScope)
         }.start()
@@ -87,27 +91,35 @@ class HomeViewModel(
     private fun showResult(coroutineScope: CoroutineScope) {
         val context: Context = getApplication()
         coroutineScope.launch {
-            context.getCameraProvider().unbindAll()
             cameraLifecycle.doOnDestroy()
+            context.getCameraProvider().unbindAll()
+            processSignal(values, timeStamps.map { (it - timeStamps[0]).toInt() }).let { study ->
+                algState = AlgState.Result(study)
+                studyRepository.save(context, study)
+                studies = study + studies
+                sendEvent(context, study)
+            }
         }
-        processSignal(values, timeStamps.map { (it - timeStamps[0]).toInt() }).let { study ->
-            algState = AlgState.Result(study)
-            studyRepository.save(context, study)
-            studies = study + studies
-            sendEvent(context, study)
-        }
+    }
+
+    private fun clearData() {
+        values.clear()
+        timeStamps.clear()
     }
 
     @SuppressLint("UnsafeOptInUsageError")
     private val imageAnalysisUseCase = imageProcessing.imageAnalysisUseCase { image ->
         when (algState) {
-            is AlgState.Prepare -> {}
             is AlgState.NONE,
+            is AlgState.DEBUG,
             is AlgState.Result-> {
-                Log.w("ImageAnalyser", "Alg state = ${algState.javaClass}")
+                Log.w(ImageProcessing.LOG_TAG, "Alg state = ${algState.javaClass}")
             }
             is AlgState.Calibrate -> {
-                values += imageProcessing.processImage(algState, image)
+                val mean = imageProcessing.getRGBStats(image)
+                if (mean[1] > 100 || mean[2] > 100 || mean[0] < 220) {
+                    (algState as AlgState.Calibrate).isCorrupted = true
+                } else values += mean[0]
             }
             is AlgState.Register -> {
                 values += imageProcessing.processImage(algState, image)
