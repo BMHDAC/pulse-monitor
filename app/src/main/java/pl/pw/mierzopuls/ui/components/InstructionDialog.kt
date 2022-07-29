@@ -17,7 +17,8 @@ import pl.pw.mierzopuls.R
 @Composable
 fun InstructionDialog(
     onDismiss: () -> Unit,
-    showAgain: (Boolean) -> Unit
+    showAgain: Boolean,
+    onCheckboxChange: (Boolean) -> Unit
 ) {
     AlertDialog(
         title = { Text(text = stringResource(id = R.string.instruction_title)) },
@@ -25,7 +26,8 @@ fun InstructionDialog(
             Column {
                 InstructionContent()
                 Row {
-                    Checkbox(modifier = Modifier.padding(horizontal = 8.dp), checked = false, onCheckedChange = showAgain)
+                    Checkbox(modifier = Modifier.padding(horizontal = 8.dp),
+                        checked = showAgain, onCheckedChange = onCheckboxChange)
                     Text(stringResource(id = R.string.instruction_show_again))
                 }
             }

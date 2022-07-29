@@ -1,25 +1,20 @@
 package pl.pw.mierzopuls
 
 import android.app.Application
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.firebase.analytics.FirebaseAnalytics
 import org.koin.android.ext.koin.androidApplication
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.compose.inject
 import org.koin.core.context.GlobalContext
 import org.koin.dsl.module
 import pl.pw.mierzopuls.alg.ImageProcessing
+import pl.pw.mierzopuls.model.AppSetting
 import pl.pw.mierzopuls.model.StudyRepository
 import pl.pw.mierzopuls.ui.History
 import pl.pw.mierzopuls.ui.Home
@@ -35,6 +30,7 @@ class MierzoPulsApp : Application() {
 
     private val repositoriesModule = module {
         single { StudyRepository() }
+        single { AppSetting(androidContext()) }
     }
 
     private val viewModelModule = module {

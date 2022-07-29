@@ -1,6 +1,5 @@
 package pl.pw.mierzopuls.ui
 
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -9,10 +8,8 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -21,6 +18,7 @@ import androidx.navigation.NavController
 import org.koin.androidx.compose.inject
 import pl.pw.mierzopuls.R
 import pl.pw.mierzopuls.alg.AlgState
+import pl.pw.mierzopuls.model.AppSetting
 import pl.pw.mierzopuls.ui.components.InstructionDialog
 import pl.pw.mierzopuls.ui.components.LogoPW
 import pl.pw.mierzopuls.ui.components.PulseBtn
@@ -28,6 +26,8 @@ import pl.pw.mierzopuls.ui.components.PulseBtn
 @Composable
 fun Home(navController: NavController) {
     val viewModel: HomeViewModel by inject()
+    val setting: AppSetting by inject()
+
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) {}
@@ -64,8 +64,14 @@ fun Home(navController: NavController) {
         }
     }
     if (viewModel.openInstruction) {
+        var showAgain by remember { mutableStateOf(!setting.showInstructionOnStart) }
         InstructionDialog(
             onDismiss = { viewModel.openInstruction = false },
-            showAgain = { Log.d("showAgain", it.toString()) } )
+            showAgain = showAgain,
+            onCheckboxChange = {
+                setting.showInstructionOnStart = !it
+                showAgain = it
+            }
+        )
     }
 }

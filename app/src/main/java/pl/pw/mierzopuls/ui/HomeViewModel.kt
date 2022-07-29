@@ -33,13 +33,14 @@ class HomeViewModel(
     private val cameraLifecycle: CameraLifecycle by inject(CameraLifecycle::class.java)
     private val imageProcessing: ImageProcessing by inject(ImageProcessing::class.java)
     private val studyRepository: StudyRepository by inject(StudyRepository::class.java)
+    private val appSetting: AppSetting by inject(AppSetting::class.java)
     private val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
     private var timeStamps: MutableList<Long> = mutableListOf()
     private var values: MutableList<Double> = mutableListOf()
 
     var studies: List<Study> by mutableStateOf(listOf())
     var algState: AlgState by mutableStateOf(AlgState.NONE)
-    var openInstruction by mutableStateOf(false)
+    var openInstruction by mutableStateOf(appSetting.showInstructionOnStart)
 
     fun initRepository() {
         studies = studyRepository.readStudies(getApplication()).sortByDate()
