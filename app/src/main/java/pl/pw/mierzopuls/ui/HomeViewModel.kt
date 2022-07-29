@@ -26,7 +26,6 @@ import pl.pw.mierzopuls.alg.processSignal
 import pl.pw.mierzopuls.model.*
 import pl.pw.mierzopuls.util.CameraLifecycle
 import pl.pw.mierzopuls.util.getCameraProvider
-import pl.pw.mierzopuls.util.saveMatrixData
 
 class HomeViewModel(
     application: Application,
@@ -58,7 +57,7 @@ class HomeViewModel(
 
     fun beginCalibration(coroutineScope: CoroutineScope) {
         algState = AlgState.Calibrate()
-        object : CountDownTimer(CALIBRATION_MS, CALIBRATION_MS.div(6)) {
+        object : CountDownTimer(CALIBRATION_MS, CALIBRATION_MS.div(10)) {
             override fun onTick(millisUntilFinished: Long) {
                 if (algState is AlgState.NONE) return this.cancel()
                 if ((algState as AlgState.Calibrate).isCorrupted) {
@@ -93,12 +92,12 @@ class HomeViewModel(
         coroutineScope.launch {
             cameraLifecycle.doOnDestroy()
             context.getCameraProvider().unbindAll()
-            processSignal(values, timeStamps.map { (it - timeStamps[0]).toInt() }).let { study ->
-                algState = AlgState.Result(study)
-                studyRepository.save(context, study)
-                studies = study + studies
-                sendEvent(context, study)
-            }
+        }
+        processSignal(values, timeStamps.map { (it - timeStamps[0]).toInt() }).let { study ->
+            algState = AlgState.Result(study)
+            studyRepository.save(context, study)
+            studies = study + studies
+            sendEvent(context, study)
         }
     }
 

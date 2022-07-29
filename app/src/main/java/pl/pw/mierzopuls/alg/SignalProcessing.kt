@@ -28,7 +28,7 @@ fun firFilter(rawSignal: DoubleArray, times: DoubleArray): DoubleArray {
     val timeStop = times.last()
 
     val fs = times.size / ((timeStop - timeStart) / 1000)
-    val width = 4.0
+    val width = 6.0
     val taps = 5
     val cutoff: DoubleArray = doubleArrayOf(0.5)
 
