@@ -1,5 +1,7 @@
 package pl.pw.mierzopuls.ui.components
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -10,6 +12,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -22,17 +25,17 @@ import pl.pw.mierzopuls.alg.AlgState
 import pl.pw.mierzopuls.ui.HomeViewModel
 
 @Composable
-fun PulseBtn(modifier: Modifier = Modifier, viewModel: HomeViewModel) {
-    val algState = viewModel.algState
+fun PulseBtn(modifier: Modifier = Modifier,
+             algState: AlgState,
+             onClick: () -> Unit
+) {
     Button(modifier = modifier
         .width(if (algState is AlgState.NONE) 180.dp else 270.dp)
         .padding(20.dp)
         .aspectRatio(1f),
         shape = CircleShape,
-        onClick = {
-            if (algState is AlgState.NONE) viewModel.beginStudy()
-            if (algState is AlgState.Result) viewModel.dismissResult()
-        }) {
+        onClick = onClick
+    ) {
         if (algState is AlgState.NONE || algState is AlgState.Result) {
             Icon(
                 modifier = Modifier.padding(8.dp),
@@ -44,7 +47,7 @@ fun PulseBtn(modifier: Modifier = Modifier, viewModel: HomeViewModel) {
             modifier = Modifier,
             fontFamily = FontFamily.Default,
             fontWeight = FontWeight.Bold,
-            fontSize = 24.sp,
+            fontSize = if (algState is AlgState.Result) 32.sp else 24.sp,
             text = algState.buttonText()
         )
     }
@@ -75,8 +78,9 @@ fun PulseBtnPreview(onClick: () -> Unit = {}) {
 fun AlgState.buttonText(): String {
     return when (this) {
         AlgState.NONE -> stringResource(id = R.string.btn_pulse_alg_NONE)
-        AlgState.Calibrate -> stringResource(id = R.string.btn_pulse_alg_CALIBRATION)
         is AlgState.Register -> stringResource(id = R.string.btn_pulse_alg_REGISTRACTION)
         is AlgState.Result -> stringResource(id = R.string.btn_pulse_alg_RESULT, this.study.pulse)
+        is AlgState.Calibrate -> stringResource(id = R.string.btn_pulse_alg_CALIBRATION)
+        AlgState.DEBUG -> stringResource(id = R.string.not_implemented)
     }
 }

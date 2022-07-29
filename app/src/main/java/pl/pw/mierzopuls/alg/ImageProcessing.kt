@@ -1,22 +1,23 @@
 package pl.pw.mierzopuls.alg
 
+import android.annotation.SuppressLint
 import android.graphics.ImageFormat
 import android.media.Image
 import android.util.Log
+import androidx.camera.core.ImageAnalysis
 import org.opencv.android.OpenCVLoader
-import org.opencv.core.Core
+import org.opencv.core.*
 import org.opencv.core.Core.countNonZero
-import org.opencv.core.CvType
-import org.opencv.core.Mat
-import org.opencv.core.Scalar
+import org.opencv.core.Core.meanStdDev
 import org.opencv.imgproc.Imgproc
+import java.util.concurrent.Executors
+import java.util.function.DoubleBinaryOperator
 
 class ImageProcessing {
     var value: Int = -100
 
     companion object {
-        private const val LOG_TAG = "ImgProc"
-
+        const val LOG_TAG = "ImgProc"
 
         init {
             if (!OpenCVLoader.initDebug()) {
@@ -28,23 +29,65 @@ class ImageProcessing {
         }
     }
 
+    @SuppressLint("UnsafeOptInUsageError")
+    fun imageAnalysisUseCase(onImage: (Image) -> Unit): ImageAnalysis {
+        return ImageAnalysis.Builder()
+            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST) //TODO: change to queue ?
+            .build()
+            .apply {
+                setAnalyzer(Executors.newSingleThreadExecutor()) { imageProxy ->
+                    imageProxy.use {
+                        onImage(it.image!!)
+                    }
+                }
+            }
+    }
+
     fun processImage(algState: AlgState, image: Image): Double {
         val mat = image.yuvToRgba()
         return when (algState) {
-            is AlgState.Calibrate -> {
-                mean(mat).`val`[0]
-            }
             is AlgState.Register -> {
-                val threshold = algState.calibration.getThreshold(5)
+                val threshold = algState.calibration.getThreshold(2)
                 Core.inRange(mat, threshold.first, threshold.second, mat)
 
                 countNonZero(mat).toDouble()
             }
+            is AlgState.Calibrate -> {
+                mean(mat).`val`[0]
+            }
             AlgState.NONE,
-            is AlgState.Result -> throw IllegalStateException("Algorithm cannot be $algState")
+            is AlgState.Result,
+            AlgState.DEBUG -> throw IllegalStateException("Algorithm cannot be $algState.")
         }
     }
 
+    /**
+     * @return List:
+     * 0 -> red
+     * 1 -> green
+     * 2 -> blue
+     */
+    fun getRGBStats(image: Image): List<Double> {
+        val mat = image.yuvToRgba()
+        val mean = mean(mat)
+        return listOf(
+            mean.`val`[0],
+            mean.`val`[1],
+            mean.`val`[2],
+        )
+    }
+
+    /**
+     * @return Scalar:
+     * val[0] -> red
+     * val[1] -> green
+     * val[2] -> blue
+     */
+    private fun mean(src: Mat): Scalar = Core.mean(src)
+
+    /**
+     * Converts YUV image to RGB matrix
+     */
     private fun Image.yuvToRgba(): Mat {
         val rgbaMat = Mat()
 
@@ -114,13 +157,5 @@ class ImageProcessing {
 
         return rgbaMat
     }
-
-    /**
-     * @return Scalar:
-     * val[0] -> red
-     * val[1] -> green
-     * val[2] -> blue
-     */
-    private fun mean(src: Mat): Scalar = Core.mean(src)
 
 }

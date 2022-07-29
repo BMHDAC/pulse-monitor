@@ -4,9 +4,9 @@
     <string name="app_history">Historia pomiarów</string>
 
     <string name="btn_pulse_alg_NONE">Start</string>
-    <string name="btn_pulse_alg_CALIBRATION">Calibruję...</string>
-    <string name="btn_pulse_alg_REGISTRACTION">Rejestruję...</string>
-    <string name="btn_pulse_alg_RESULT">Puls: <big><b>%1s</b></big></string>
+    <string name="btn_pulse_alg_CALIBRATION">Kalibracja</string>
+    <string name="btn_pulse_alg_REGISTRACTION">Mierzę puls</string>
+    <string name="btn_pulse_alg_RESULT"><big><b>%1s</b></big></string>
 
     <string name="study_chart_line1">surowe</string>
     <string name="study_chart_line2">filtrowane</string>
@@ -15,4 +15,6 @@
     <string name="instruction_title">Instrukcja</string>
     <string name="instruction_show_again">Nie pokazuj więcej</string>
     <string name="instruction_ok">OK !</string>
+
+    <string name="not_implemented">Not implemented</string>
 </resources>

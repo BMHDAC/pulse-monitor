@@ -3,7 +3,7 @@ package pl.pw.mierzopuls.alg
 import com.github.psambit9791.jdsp.filter.FIRWin1
 import com.github.psambit9791.jdsp.signal.peaks.FindPeak
 import pl.pw.mierzopuls.model.Study
-import pl.pw.mierzopuls.util.formatStudyDate
+import pl.pw.mierzopuls.model.formatStudyDate
 import java.util.*
 
 fun processSignal(raw: List<Double>, times: List<Int>): Study {
@@ -28,7 +28,7 @@ fun firFilter(rawSignal: DoubleArray, times: DoubleArray): DoubleArray {
     val timeStop = times.last()
 
     val fs = times.size / ((timeStop - timeStart) / 1000)
-    val width = 4.0
+    val width = 6.0
     val taps = 5
     val cutoff: DoubleArray = doubleArrayOf(0.5)
 

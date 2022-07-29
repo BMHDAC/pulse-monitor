@@ -20,4 +20,13 @@ data class Calibration(
             255.0
         )
     }
+    companion object {
+        fun getCalibration(values: List<Double>): Calibration {
+            return Calibration(
+                values.average(),
+                0.0,
+                0.0
+            )
+        }
+    }
 }
