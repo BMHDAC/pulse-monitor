@@ -3,10 +3,7 @@ package pl.pw.mierzopuls.ui
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Button
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.runtime.*
@@ -41,9 +38,9 @@ fun Home(navController: NavController) {
                 contentDescription = ""
             )
         }
-        PulseBtn(
-            modifier = Modifier.align(Alignment.Center),
+        PulseBtn(modifier = Modifier.align(Alignment.Center),
             algState = viewModel.algState,
+            progress = viewModel.studyProgress,
             onClick = {
                 if (viewModel.algState is AlgState.NONE) {
                     viewModel.beginStudy(launcher, coroutineScope)

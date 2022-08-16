@@ -4,7 +4,7 @@
     <string name="app_history">Historia pomiarów</string>
 
     <string name="btn_pulse_alg_NONE">Start</string>
-    <string name="btn_pulse_alg_CALIBRATION">Kalibracja</string>
+    <string name="btn_pulse_alg_CALIBRATION">Przyciśnij palec</string>
     <string name="btn_pulse_alg_REGISTRACTION">Mierzę puls</string>
     <string name="btn_pulse_alg_RESULT"><big><b>%1s</b></big></string>
 

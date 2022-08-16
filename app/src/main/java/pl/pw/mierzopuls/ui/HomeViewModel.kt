@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 import org.koin.java.KoinJavaComponent.inject
 import pl.pw.mierzopuls.alg.AlgState
 import pl.pw.mierzopuls.alg.AlgState.Calibrate.Companion.CALIBRATION_MS
-import pl.pw.mierzopuls.alg.AlgState.Register.Companion.REGISTRATION_TIME
+import pl.pw.mierzopuls.alg.AlgState.Register.Companion.REGISTRATION_TIME_MS
 import pl.pw.mierzopuls.alg.Calibration
 import pl.pw.mierzopuls.alg.ImageProcessing
 import pl.pw.mierzopuls.alg.processSignal
@@ -40,6 +40,7 @@ class HomeViewModel(
 
     var studies: List<Study> by mutableStateOf(listOf())
     var algState: AlgState by mutableStateOf(AlgState.NONE)
+    var studyProgress by mutableStateOf(0F)
     var openInstruction by mutableStateOf(appSetting.showInstructionOnStart)
 
     fun initRepository() {
@@ -58,14 +59,15 @@ class HomeViewModel(
 
     fun beginCalibration(coroutineScope: CoroutineScope) {
         algState = AlgState.Calibrate()
-        object : CountDownTimer(CALIBRATION_MS, CALIBRATION_MS.div(10)) {
+        object : CountDownTimer(CALIBRATION_MS, CALIBRATION_MS.div(3)) {
             override fun onTick(millisUntilFinished: Long) {
                 if (algState is AlgState.NONE) return this.cancel()
-                if ((algState as AlgState.Calibrate).isCorrupted) {
+                if ((algState as AlgState.Calibrate).isFingerInPlace) {
                     this.cancel()
                     clearData()
                     beginCalibration(coroutineScope)
                 }
+                studyProgress = getStudyProgress(CALIBRATION_MS - millisUntilFinished)
             }
             override fun onFinish() = beginRegistration(Calibration.getCalibration(values), coroutineScope)
         }.start()
@@ -82,8 +84,10 @@ class HomeViewModel(
     private fun beginRegistration(calibration: Calibration, coroutineScope: CoroutineScope) {
         algState = AlgState.Register(calibration)
         clearData()
-        object : CountDownTimer(REGISTRATION_TIME, REGISTRATION_TIME) {
-            override fun onTick(millisUntilFinished: Long) = Unit
+        object : CountDownTimer(REGISTRATION_TIME_MS, REGISTRATION_TIME_MS.div(15)) {
+            override fun onTick(millisUntilFinished: Long) {
+                studyProgress = getStudyProgress(CALIBRATION_MS + REGISTRATION_TIME_MS - millisUntilFinished)
+            }
             override fun onFinish() = showResult(coroutineScope)
         }.start()
     }
@@ -94,31 +98,29 @@ class HomeViewModel(
             cameraLifecycle.doOnDestroy()
             context.getCameraProvider().unbindAll()
         }
-        processSignal(values, timeStamps.map { (it - timeStamps[0]).toInt() }).let { study ->
+        val valuesRaw = values
+        val timeStampsOffSetFromZero = timeStamps.map { (it - timeStamps[0]).toInt() }
+        processSignal(valuesRaw, timeStampsOffSetFromZero).let { study ->
             algState = AlgState.Result(study)
+            studyProgress = 1F
             studyRepository.save(context, study)
             studies = study + studies
             sendEvent(context, study)
         }
     }
 
-    private fun clearData() {
-        values.clear()
-        timeStamps.clear()
-    }
-
     @SuppressLint("UnsafeOptInUsageError")
     private val imageAnalysisUseCase = imageProcessing.imageAnalysisUseCase { image ->
-        when (algState) {
+        when (val state = algState) {
             is AlgState.NONE,
             is AlgState.DEBUG,
             is AlgState.Result-> {
-                Log.w(ImageProcessing.LOG_TAG, "Alg state = ${algState.javaClass}")
+                Log.w(ImageProcessing.LOG_TAG, "Alg state = ${state.javaClass}")
             }
             is AlgState.Calibrate -> {
                 val mean = imageProcessing.getRGBStats(image)
                 if (mean[1] > 100 || mean[2] > 100 || mean[0] < 220) {
-                    (algState as AlgState.Calibrate).isCorrupted = true
+                    state.isFingerInPlace = true
                 } else values += mean[0]
             }
             is AlgState.Register -> {
@@ -127,6 +129,13 @@ class HomeViewModel(
             }
         }
     }
+
+    private fun clearData() {
+        values.clear()
+        timeStamps.clear()
+    }
+
+    private fun getStudyProgress(currentTime: Long): Float = currentTime.toFloat() / (CALIBRATION_MS + REGISTRATION_TIME_MS - 500L)
 
     private suspend fun prepareCamera(context: Context) {
         val cameraProvider = context.getCameraProvider()
