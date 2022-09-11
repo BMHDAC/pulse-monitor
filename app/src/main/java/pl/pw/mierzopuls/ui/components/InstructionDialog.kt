@@ -50,7 +50,7 @@ fun InstructionDialog(
 @Composable
 fun InstructionContent() {
     Text(modifier = Modifier.padding(12.dp),
-        text = "Przed badaniem należy zezwolić na dostęp do tylnej kamery. Następnie zasłonić palcem obiektyw i lampę błyskową. Rejestracja trwa około 18 s."
+        text = "Przed badaniem należy zezwolić na dostęp do tylnej kamery. Następnie zasłonić palcem obiektyw i lampę błyskową. Badanie trwa 30 s."
     )
     Image(
         modifier = Modifier

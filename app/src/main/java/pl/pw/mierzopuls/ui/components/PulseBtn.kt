@@ -1,8 +1,6 @@
 package pl.pw.mierzopuls.ui.components
 
-import android.content.res.Resources
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Button
@@ -12,10 +10,8 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -23,45 +19,63 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.koin.androidx.compose.inject
 import pl.pw.mierzopuls.R
 import pl.pw.mierzopuls.alg.AlgState
 import pl.pw.mierzopuls.ui.HomeViewModel
 import pl.pw.mierzopuls.ui.theme.LightRose
 
 @Composable
-fun PulseBtn(modifier: Modifier = Modifier,
+fun  PulseBtn(modifier: Modifier = Modifier,
              algState: AlgState,
              progress: Float,
              onClick: () -> Unit
 ) {
-    Box(modifier = modifier) {
+    val viewModel: HomeViewModel by inject()
+    Box(
+        modifier = modifier.animateContentSize(),
+    ) {
         if (algState !is AlgState.NONE) {
             CircularProgressIndicator(
                 progress,
-                modifier.size(270.dp),
+                Modifier
+                    .size(270.dp)
+                    .align(Alignment.Center),
                 color = LightRose,
                 strokeWidth = 24.dp,
             )
         }
-        Button(modifier = modifier
-            .width(if (algState is AlgState.NONE) 180.dp else 270.dp)
-            .padding(20.dp)
+        Button(modifier = Modifier
+            .align(Alignment.Center)
+            .width(if (algState is AlgState.NONE) 180.dp else 240.dp)
             .aspectRatio(1f),
             shape = CircleShape,
             onClick = onClick
         ) {
             if (algState is AlgState.NONE || algState is AlgState.Result) {
                 Icon(
-                    modifier = Modifier.padding(8.dp),
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .align(Alignment.CenterVertically)
+                        .size(if (algState !is AlgState.Result) 24.dp else 36.dp)
+                    ,
                     imageVector = Icons.Outlined.Favorite,
                     contentDescription = ""
                 )
             }
-            Text(text = algState.buttonText(),
+            Text(
                 modifier = Modifier.align(Alignment.CenterVertically),
                 fontFamily = FontFamily.Default,
                 fontWeight = FontWeight.Bold,
-                fontSize = algState.buttonFontSize()
+                fontSize = algState.buttonFontSize(),
+                text = when(algState) {
+                    AlgState.NONE -> stringResource(id = R.string.btn_pulse_alg_NONE)
+                    is AlgState.Finished,
+                    is AlgState.Register -> stringResource(id = R.string.btn_pulse_alg_REGISTRACTION)
+                    is AlgState.Result -> stringResource(id = R.string.btn_pulse_alg_RESULT, algState.pulse)
+                    is AlgState.Calibrate -> stringResource(id = R.string.btn_pulse_alg_CALIBRATION)
+                    AlgState.DEBUG -> stringResource(id = R.string.not_implemented)
+                }
             )
         }
     }
@@ -94,18 +108,8 @@ fun PulseBtnPreview(onClick: () -> Unit = {}) {
 }
 
 @Composable
-fun AlgState.buttonText(): String = when (this) {
-    AlgState.NONE -> stringResource(id = R.string.btn_pulse_alg_NONE)
-    is AlgState.Register -> stringResource(id = R.string.btn_pulse_alg_REGISTRACTION)
-    is AlgState.Result -> stringResource(id = R.string.btn_pulse_alg_RESULT, this.study.pulse)
-    is AlgState.Calibrate -> stringResource(id = R.string.btn_pulse_alg_CALIBRATION)
-    AlgState.DEBUG -> stringResource(id = R.string.not_implemented)
-}
-
-
-@Composable
 fun AlgState.buttonFontSize(): TextUnit = when(this) {
-    is AlgState.Result -> 32.sp
-    is AlgState.Calibrate -> 20.sp
+    is AlgState.Result -> 48.sp
+    is AlgState.Calibrate -> 24.sp
     else -> 24.sp
 }

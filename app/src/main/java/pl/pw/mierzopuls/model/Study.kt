@@ -57,9 +57,9 @@ fun StudyDate.toMs(): Long {
 }
 
 fun Calendar.formatStudyDate(): StudyDate {
-    val minutes = this[Calendar.MINUTE].let { if (it < 9) "0$it" else "$it" }
-    val hours = this[Calendar.HOUR_OF_DAY].let { if (it < 9) "0$it" else "$it" }
-    val month = this[Calendar.MONTH].let { if (it < 9) "0$it" else "$it" }
-    val day = this[Calendar.MONTH].let { if (it < 9) "0$it" else "$it" }
+    val minutes = this[Calendar.MINUTE].let { if (it <= 9) "0$it" else "$it" }
+    val hours = this[Calendar.HOUR_OF_DAY].let { if (it <= 9) "0$it" else "$it" }
+    val month = this[Calendar.MONTH].let { if (it <= 9) "0$it" else "$it" }
+    val day = this[Calendar.MONTH].let { if (it <= 9) "0$it" else "$it" }
     return "$day/$month/${this[Calendar.YEAR]} $hours:$minutes"
 }

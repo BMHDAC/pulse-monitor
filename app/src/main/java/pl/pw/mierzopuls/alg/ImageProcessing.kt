@@ -8,10 +8,8 @@ import androidx.camera.core.ImageAnalysis
 import org.opencv.android.OpenCVLoader
 import org.opencv.core.*
 import org.opencv.core.Core.countNonZero
-import org.opencv.core.Core.meanStdDev
 import org.opencv.imgproc.Imgproc
 import java.util.concurrent.Executors
-import java.util.function.DoubleBinaryOperator
 
 class ImageProcessing {
     var value: Int = -100
@@ -56,6 +54,7 @@ class ImageProcessing {
                 mean(mat).`val`[0]
             }
             AlgState.NONE,
+            is AlgState.Finished,
             is AlgState.Result,
             AlgState.DEBUG -> throw IllegalStateException("Algorithm cannot be $algState.")
         }

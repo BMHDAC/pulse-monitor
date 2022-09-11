@@ -15,7 +15,7 @@ fun processSignal(raw: List<Double>, times: List<Int>): Study {
 
     return Study(
         date = Calendar.getInstance().formatStudyDate(),
-        raw = baseLineRemoval,
+        raw = raw,
         times = times,
         filtered = filteredSignal.toList(),
         peaks = peaks,

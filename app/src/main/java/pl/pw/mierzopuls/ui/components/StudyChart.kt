@@ -24,7 +24,8 @@ fun StudyChart(
     xLabel: String = "", //TODO: draw axis labels
     yLabel: String = ""
 ) {
-    val line1 = study.raw.zip(study.times).map {
+    val rawMean = study.raw.average()
+    val line1 = study.raw.map { it - rawMean }.zip(study.times).map {
         Entry(it.second.toFloat(), it.first.toFloat())
     }
     val line1Label = stringResource(id = R.string.study_chart_line1)

@@ -1,23 +1,15 @@
 package pl.pw.mierzopuls
 
 import android.app.Application
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import org.koin.android.ext.koin.androidApplication
 import org.koin.android.ext.koin.androidContext
-import org.koin.androidx.compose.inject
+import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.context.GlobalContext
 import org.koin.dsl.module
 import pl.pw.mierzopuls.alg.ImageProcessing
+import pl.pw.mierzopuls.alg.StudyManager
 import pl.pw.mierzopuls.model.AppSetting
 import pl.pw.mierzopuls.model.StudyRepository
-import pl.pw.mierzopuls.ui.History
-import pl.pw.mierzopuls.ui.Home
 import pl.pw.mierzopuls.ui.HomeViewModel
 import pl.pw.mierzopuls.util.CameraLifecycle
 
@@ -33,8 +25,9 @@ class MierzoPulsApp : Application() {
         single { AppSetting(androidContext()) }
     }
 
-    private val viewModelModule = module {
-        single { HomeViewModel(androidApplication()) }
+    private val appModule = module {
+        single { StudyManager(get(), get()) }
+        viewModel { HomeViewModel(androidApplication(), get(), get()) }
     }
 
     override fun onCreate() {
@@ -44,26 +37,7 @@ class MierzoPulsApp : Application() {
             androidContext(applicationContext)
             modules(utilModule)
             modules(repositoriesModule)
-            modules(viewModelModule)
+            modules(appModule)
         }
-    }
-}
-
-@ExperimentalPermissionsApi
-@ExperimentalFoundationApi
-@Composable
-fun app() {
-    val viewModel: HomeViewModel by inject()
-    val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = "home") {
-        composable("home") {
-            Home(navController)
-        }
-        composable("history") {
-            History()
-        }
-    }
-    LaunchedEffect(key1 = viewModel) {
-        viewModel.initRepository()
     }
 }

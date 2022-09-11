@@ -1,6 +1,10 @@
 package pl.pw.mierzopuls.model
 
 import android.content.Context
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
 class StudyRepository {
@@ -14,12 +18,14 @@ class StudyRepository {
         }
     }
 
-    fun readStudies(context: Context): List<Study> {
-        return context.applicationInfo.dataDir.let { dir ->
-            File(dir).listFiles { _, s ->
-                s.takeLast(5) == ".json"
-            }.map { file ->
-                file.readText().toStudy()
+    suspend fun readStudies(context: Context): List<Study>? {
+        return withContext(Dispatchers.IO) {
+            context.applicationInfo.dataDir.let { dir ->
+                File(dir).listFiles { _, s ->
+                    s.takeLast(5) == ".json"
+                }?.map { file ->
+                    file.readText().toStudy()
+                }
             }
         }
     }
