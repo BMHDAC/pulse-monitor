@@ -17,7 +17,7 @@ class MierzoPulsApp : Application() {
 
     private val utilModule = module {
         single { CameraLifecycle() }
-        single { ImageProcessing() }
+        single { ImageProcessing }
     }
 
     private val repositoriesModule = module {

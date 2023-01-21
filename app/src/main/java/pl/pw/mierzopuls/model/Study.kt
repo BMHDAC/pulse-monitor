@@ -1,6 +1,7 @@
 package pl.pw.mierzopuls.model
 
 import com.google.gson.Gson
+import pl.pw.mierzopuls.alg.AlgState
 import java.util.*
 
 typealias StudyDate = String
@@ -14,9 +15,10 @@ typealias StudyDate = String
  * @property peaks indexes of detected peaks
  * @constructor creates an empty group.
  */
+
 data class Study(
     val id: String = UUID.randomUUID().toString(),
-    val date: StudyDate,
+    val date: String,
     val pulse: Int,
     val times: List<Int> = listOf(),
     val raw: List<Double> = listOf(),
@@ -33,6 +35,8 @@ fun Study.fps(): Int {
 operator fun Study.plus(list: List<Study>) = listOf(this, *list.toTypedArray())
 
 fun List<Study>.sortByDate(): List<Study> {
+    val s = AlgState.Calibration(true)
+    val t = s.isFingerInPlace
     return this.map {
         it to it.date.toMs()
     }.sortedBy {
@@ -60,6 +64,6 @@ fun Calendar.formatStudyDate(): StudyDate {
     val minutes = this[Calendar.MINUTE].let { if (it <= 9) "0$it" else "$it" }
     val hours = this[Calendar.HOUR_OF_DAY].let { if (it <= 9) "0$it" else "$it" }
     val month = this[Calendar.MONTH].let { if (it <= 9) "0$it" else "$it" }
-    val day = this[Calendar.MONTH].let { if (it <= 9) "0$it" else "$it" }
+    val day = this[Calendar.DAY_OF_MONTH].let { if (it <= 9) "0$it" else "$it" }
     return "$day/$month/${this[Calendar.YEAR]} $hours:$minutes"
 }

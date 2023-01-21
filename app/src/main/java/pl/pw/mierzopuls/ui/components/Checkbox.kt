@@ -17,5 +17,8 @@ fun Checkbox(
         checked = checked,
         onCheckedChange = onCheckedChange
     )
-    Text(modifier = Modifier, text = title)
+    Text(
+        modifier = Modifier,
+        text = title
+    )
 }

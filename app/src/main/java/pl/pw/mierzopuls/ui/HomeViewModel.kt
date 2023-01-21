@@ -2,12 +2,17 @@ package pl.pw.mierzopuls.ui
 
 import android.Manifest
 import android.app.Application
+import android.content.Context
 import android.content.pm.PackageManager
+import android.os.Build
+import android.os.Vibrator
+import android.os.VibratorManager
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
+import androidx.core.content.getSystemService
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.delay
@@ -29,6 +34,7 @@ class HomeViewModel(
     val studyProgress
         get() = studyManager.progress
 
+    // TODO: proper functioning
     var openInstruction by mutableStateOf(appSetting.showInstructionOnStart)
     var isLoading by mutableStateOf(true)
 
@@ -48,7 +54,10 @@ class HomeViewModel(
     fun beginStudy(launcher: ManagedActivityResultLauncher<String, Boolean>) {
         if (!checkPermissions(launcher)) return
         viewModelScope.launch {
-            studyManager.beginStudy(getApplication()) { timeStamps, values ->
+            studyManager.beginStudy(
+                getApplication(),
+                getApplication<Application>().applicationContext.getSystemService()!!
+            ) { timeStamps, values ->
                 finishStudy(timeStamps, values)
             }
         }
@@ -63,6 +72,7 @@ class HomeViewModel(
     private fun finishStudy(timeStamps: List<Long>, values: List<Double>) {
         viewModelScope.launch {
             studyManager.finishStudy(getApplication())
+            vibrate()
         }
         val timeStampsOffSetFromZero = timeStamps.map { (it - timeStamps[0]).toInt() }
         processSignal(values.toList(), timeStampsOffSetFromZero).let { study ->
@@ -86,5 +96,10 @@ class HomeViewModel(
                 false
             }
         }
+    }
+
+    private fun vibrate() {
+        val v = getApplication<Application>().applicationContext.getSystemService<Vibrator>()
+        v!!.vibrate(400)
     }
 }

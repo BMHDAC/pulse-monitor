@@ -21,20 +21,13 @@ import pl.pw.mierzopuls.model.Study
 fun StudyChart(
     modifier: Modifier = Modifier,
     study: Study,
-    xLabel: String = "", //TODO: draw axis labels
-    yLabel: String = ""
 ) {
-    val rawMean = study.raw.average()
-    val line1 = study.raw.map { it - rawMean }.zip(study.times).map {
+    val line1 = study.filtered.zip(study.times).map {
         Entry(it.second.toFloat(), it.first.toFloat())
-    }
+    }.drop(50)
     val line1Label = stringResource(id = R.string.study_chart_line1)
-    val line2 = study.filtered.zip(study.times).map {
-        Entry(it.second.toFloat(), it.first.toFloat())
-    }
-    val line2Label = stringResource(id = R.string.study_chart_line2)
     val points = study.filtered.zip(study.times).filterIndexed { idx, _ ->
-        study.peaks.contains(idx)
+        study.peaks.contains(idx) && idx > 50
     }.map {
         Entry(it.second.toFloat(), it.first.toFloat())
     }
@@ -61,10 +54,6 @@ fun StudyChart(
                     color = Color.rgb(100, 238, 170)
                     setDrawCircles(false)
                 },
-                LineDataSet(line2, line2Label).apply {
-                    color = Color.rgb(200, 4, 0)
-                    setDrawCircles(false)
-                }
             )
             val pointsData = ScatterData(
                 ScatterDataSet(points, pointsLabel).apply {

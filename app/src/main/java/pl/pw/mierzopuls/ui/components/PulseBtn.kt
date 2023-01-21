@@ -73,8 +73,7 @@ fun  PulseBtn(modifier: Modifier = Modifier,
                     is AlgState.Finished,
                     is AlgState.Register -> stringResource(id = R.string.btn_pulse_alg_REGISTRACTION)
                     is AlgState.Result -> stringResource(id = R.string.btn_pulse_alg_RESULT, algState.pulse)
-                    is AlgState.Calibrate -> stringResource(id = R.string.btn_pulse_alg_CALIBRATION)
-                    AlgState.DEBUG -> stringResource(id = R.string.not_implemented)
+                    is AlgState.Calibration -> stringResource(id = R.string.btn_pulse_alg_CALIBRATION)
                 }
             )
         }
@@ -110,6 +109,6 @@ fun PulseBtnPreview(onClick: () -> Unit = {}) {
 @Composable
 fun AlgState.buttonFontSize(): TextUnit = when(this) {
     is AlgState.Result -> 48.sp
-    is AlgState.Calibrate -> 24.sp
+    is AlgState.Calibration -> 24.sp
     else -> 24.sp
 }

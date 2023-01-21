@@ -11,26 +11,36 @@ import org.opencv.core.Core.countNonZero
 import org.opencv.imgproc.Imgproc
 import java.util.concurrent.Executors
 
-class ImageProcessing {
-    var value: Int = -100
-
-    companion object {
-        const val LOG_TAG = "ImgProc"
-
-        init {
-            if (!OpenCVLoader.initDebug()) {
-                Log.e(LOG_TAG, "Unable to load OpenCV! BE")
-                throw InstantiationException("OpenCV not loaded correctly!")
-            } else {
-                Log.d(LOG_TAG, "OpenCV library loaded correctly")
-            }
+object ImageProcessing {
+    const val LOG_TAG = "ImgProc"
+    init {
+        if (!OpenCVLoader.initDebug()) {
+            Log.e(LOG_TAG, "Unable to load OpenCV! BE")
+            throw InstantiationException("OpenCV not loaded correctly!")
+        } else {
+            Log.d(LOG_TAG, "OpenCV library loaded correctly")
         }
     }
+
+    fun processImage(image: Image): List<Double> {
+        val mean = image.yuvToRgba().let { Core.mean(it) }
+        return listOf(
+            mean.`val`[0],
+            mean.`val`[1],
+            mean.`val`[2],
+        )
+    }
+
+    fun isFingerInPlace(mean: List<Double>): Boolean {
+        return mean[1] < 100 && mean[2] < 100 && mean[0] > 220
+    }
+
+    // ...
 
     @SuppressLint("UnsafeOptInUsageError")
     fun imageAnalysisUseCase(onImage: (Image) -> Unit): ImageAnalysis {
         return ImageAnalysis.Builder()
-            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST) //TODO: change to queue ?
+            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .build()
             .apply {
                 setAnalyzer(Executors.newSingleThreadExecutor()) { imageProxy ->
@@ -40,49 +50,6 @@ class ImageProcessing {
                 }
             }
     }
-
-    fun processImage(algState: AlgState, image: Image): Double {
-        val mat = image.yuvToRgba()
-        return when (algState) {
-            is AlgState.Register -> {
-                val threshold = algState.calibration.getThreshold(2)
-                Core.inRange(mat, threshold.first, threshold.second, mat)
-
-                countNonZero(mat).toDouble()
-            }
-            is AlgState.Calibrate -> {
-                mean(mat).`val`[0]
-            }
-            AlgState.NONE,
-            is AlgState.Finished,
-            is AlgState.Result,
-            AlgState.DEBUG -> throw IllegalStateException("Algorithm cannot be $algState.")
-        }
-    }
-
-    /**
-     * @return List:
-     * 0 -> red
-     * 1 -> green
-     * 2 -> blue
-     */
-    fun getRGBStats(image: Image): List<Double> {
-        val mat = image.yuvToRgba()
-        val mean = mean(mat)
-        return listOf(
-            mean.`val`[0],
-            mean.`val`[1],
-            mean.`val`[2],
-        )
-    }
-
-    /**
-     * @return Scalar:
-     * val[0] -> red
-     * val[1] -> green
-     * val[2] -> blue
-     */
-    private fun mean(src: Mat): Scalar = Core.mean(src)
 
     /**
      * Converts YUV image to RGB matrix
@@ -156,5 +123,4 @@ class ImageProcessing {
 
         return rgbaMat
     }
-
 }

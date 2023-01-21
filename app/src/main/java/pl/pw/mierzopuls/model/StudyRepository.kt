@@ -32,9 +32,7 @@ class StudyRepository {
 
     fun readStudy(context: Context, id: String): Study {
         return context.applicationInfo.dataDir.let { dir ->
-            File(dir, "${id}.json").let { file ->
-                file.readText().toStudy()
-            }
+            File(dir, "${id}.json").readText().toStudy()
         }
     }
 }
