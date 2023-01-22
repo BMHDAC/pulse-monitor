@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import org.koin.androidx.compose.inject
-import pl.pw.mierzopuls.alg.AlgState
+import pl.pw.mierzopuls.model.alg.AlgState
 import pl.pw.mierzopuls.model.Study
 import pl.pw.mierzopuls.model.toJson
 import pl.pw.mierzopuls.ui.components.InstructionDialog

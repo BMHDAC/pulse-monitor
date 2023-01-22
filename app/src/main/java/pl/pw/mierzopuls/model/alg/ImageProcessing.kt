@@ -1,4 +1,4 @@
-package pl.pw.mierzopuls.alg
+package pl.pw.mierzopuls.model.alg
 
 import android.annotation.SuppressLint
 import android.graphics.ImageFormat

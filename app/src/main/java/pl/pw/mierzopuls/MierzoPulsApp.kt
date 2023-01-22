@@ -6,8 +6,8 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.context.GlobalContext
 import org.koin.dsl.module
-import pl.pw.mierzopuls.alg.ImageProcessing
-import pl.pw.mierzopuls.alg.StudyManager
+import pl.pw.mierzopuls.model.alg.ImageProcessing
+import pl.pw.mierzopuls.model.alg.StudyManager
 import pl.pw.mierzopuls.model.AppSetting
 import pl.pw.mierzopuls.model.StudyRepository
 import pl.pw.mierzopuls.ui.HomeViewModel

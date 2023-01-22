@@ -15,9 +15,9 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.java.KoinJavaComponent.inject
-import pl.pw.mierzopuls.alg.AlgState
-import pl.pw.mierzopuls.alg.StudyManager
-import pl.pw.mierzopuls.alg.processSignal
+import pl.pw.mierzopuls.model.alg.AlgState
+import pl.pw.mierzopuls.model.alg.StudyManager
+import pl.pw.mierzopuls.model.alg.processSignal
 import pl.pw.mierzopuls.model.*
 
 class HomeViewModel(

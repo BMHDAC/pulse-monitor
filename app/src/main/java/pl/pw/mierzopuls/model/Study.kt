@@ -1,7 +1,7 @@
 package pl.pw.mierzopuls.model
 
 import com.google.gson.Gson
-import pl.pw.mierzopuls.alg.AlgState
+import pl.pw.mierzopuls.model.alg.AlgState
 import java.util.*
 
 typealias StudyDate = String

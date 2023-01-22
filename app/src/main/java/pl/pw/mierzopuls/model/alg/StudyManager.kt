@@ -1,4 +1,4 @@
-package pl.pw.mierzopuls.alg
+package pl.pw.mierzopuls.model.alg
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -35,15 +35,15 @@ class StudyManager(
     var progress: Float by mutableStateOf(0.0f)
 
     @SuppressLint("UnsafeOptInUsageError")
-    val imageAnalysisUseCase = imageProcessing.imageAnalysisUseCase { image ->
+    val imageAnalysisUseCase = ImageProcessing.imageAnalysisUseCase { image ->
         when (val state = algState) {
             is AlgState.NONE,
-            is AlgState.Finished-> {
+            is AlgState.Finished -> {
                 Log.w(ImageProcessing.LOG_TAG, "Alg state = ${state.javaClass}")
             }
             is AlgState.Calibration -> {
-                val mean = imageProcessing.processImage(image)
-                if (imageProcessing.isFingerInPlace(mean)) {
+                val mean = ImageProcessing.processImage(image)
+                if (ImageProcessing.isFingerInPlace(mean)) {
                     values += mean[1]
                     timeStamps += System.currentTimeMillis()
                 } else {
@@ -54,7 +54,7 @@ class StudyManager(
                 }
             }
             is AlgState.Register -> {
-                values += imageProcessing.processImage(image)[1]
+                values += ImageProcessing.processImage(image)[1]
                 timeStamps += System.currentTimeMillis()
             }
         }

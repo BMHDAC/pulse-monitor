@@ -20,15 +20,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.koin.androidx.compose.inject
 import pl.pw.mierzopuls.R
-import pl.pw.mierzopuls.alg.AlgState
+import pl.pw.mierzopuls.model.alg.AlgState
 import pl.pw.mierzopuls.ui.HomeViewModel
 import pl.pw.mierzopuls.ui.theme.LightRose
 
 @Composable
 fun  PulseBtn(modifier: Modifier = Modifier,
-             algState: AlgState,
-             progress: Float,
-             onClick: () -> Unit
+              algState: AlgState,
+              progress: Float,
+              onClick: () -> Unit
 ) {
     val viewModel: HomeViewModel by inject()
     Box(

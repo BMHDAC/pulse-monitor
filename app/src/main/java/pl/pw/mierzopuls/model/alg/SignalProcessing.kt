@@ -1,4 +1,4 @@
-package pl.pw.mierzopuls.alg
+package pl.pw.mierzopuls.model.alg
 
 import com.github.psambit9791.jdsp.filter.Butterworth
 import com.github.psambit9791.jdsp.signal.peaks.FindPeak

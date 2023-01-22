@@ -1,4 +1,4 @@
-package pl.pw.mierzopuls.alg
+package pl.pw.mierzopuls.model.alg
 
 sealed class AlgState {
     object NONE : AlgState()
