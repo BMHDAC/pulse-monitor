@@ -17,7 +17,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
@@ -26,13 +25,13 @@ import pl.pw.mierzopuls.model.Study
 import pl.pw.mierzopuls.model.toDisplay
 import pl.pw.mierzopuls.ui.components.*
 import pl.pw.mierzopuls.ui.theme.test
-import pl.pw.mierzopuls.util.SampleData
 
 @OptIn(ExperimentalMaterialApi::class)
 @ExperimentalFoundationApi
 @Composable
 fun HistoryBottomSheet(
     studies: List<Study>,
+    onSave: (Study) -> Unit,
     homeContent: @Composable () -> Unit
 ) {
     val sheetState = rememberBottomSheetState(initialValue = BottomSheetValue.Collapsed)
@@ -84,7 +83,7 @@ fun HistoryBottomSheet(
                 }
             }
             items(studies) { study ->
-                StudyRow(study = study)
+                StudyRow(study = study, onSave)
             }
         }
     }) {
@@ -99,7 +98,10 @@ fun HistoryBottomSheet(
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun StudyRow(study: Study) {
+fun StudyRow(
+    study: Study,
+    onSave: (Study) -> Unit
+) {
     var isExpanded by remember { mutableStateOf(false) }
 
     Card(modifier = Modifier
@@ -139,7 +141,7 @@ fun StudyRow(study: Study) {
                             .padding(8.dp)
                             .size(48.dp),
                         backgroundColor = MaterialTheme.colors.primary,
-                        onClick = {  }
+                        onClick = { onSave(study) }
                     ) {
                         Icon(modifier = Modifier.padding(16.dp),
                             painter = painterResource(id = R.drawable.ic_save),
@@ -164,22 +166,6 @@ fun StudyRow(study: Study) {
                     study = study,
                 )
             }
-        }
-    }
-}
-
-@ExperimentalFoundationApi
-@Composable
-@Preview
-fun HistoryPreview(
-    studies: List<Study> = SampleData.studies
-) {
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
-        stickyHeader {
-            LogoPW()
-        }
-        items(studies) { study ->
-            StudyRow(study = study)
         }
     }
 }

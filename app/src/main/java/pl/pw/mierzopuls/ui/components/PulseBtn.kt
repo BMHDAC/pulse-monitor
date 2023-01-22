@@ -15,7 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -77,32 +76,6 @@ fun  PulseBtn(modifier: Modifier = Modifier,
                 }
             )
         }
-    }
-}
-
-@Preview
-@Composable
-fun PulseBtnPreview(onClick: () -> Unit = {}) {
-    CircularProgressIndicator(Modifier
-        .size(270.dp),
-        color = LightRose,
-        strokeWidth = 16.dp
-    )
-    Button(
-        modifier = Modifier
-            .width(270.dp)
-            .padding(12.dp)
-            .aspectRatio(1f),
-        onClick = onClick,
-        shape = CircleShape
-    ) {
-        Text(
-            modifier = Modifier.align(Alignment.CenterVertically),
-            fontFamily = FontFamily.Default,
-            fontWeight = FontWeight.Bold,
-            fontSize = 24.sp,
-            text = "Przyciśnij palec"
-        )
     }
 }
 

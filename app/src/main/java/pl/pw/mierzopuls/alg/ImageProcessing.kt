@@ -7,7 +7,6 @@ import android.util.Log
 import androidx.camera.core.ImageAnalysis
 import org.opencv.android.OpenCVLoader
 import org.opencv.core.*
-import org.opencv.core.Core.countNonZero
 import org.opencv.imgproc.Imgproc
 import java.util.concurrent.Executors
 
@@ -32,10 +31,8 @@ object ImageProcessing {
     }
 
     fun isFingerInPlace(mean: List<Double>): Boolean {
-        return mean[1] < 100 && mean[2] < 100 && mean[0] > 220
+        return mean[1] < 100 && mean[2] < 100 && mean[0] > 170
     }
-
-    // ...
 
     @SuppressLint("UnsafeOptInUsageError")
     fun imageAnalysisUseCase(onImage: (Image) -> Unit): ImageAnalysis {

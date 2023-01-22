@@ -9,7 +9,7 @@
     <string name="btn_pulse_alg_RESULT"><big><b>%1s</b></big></string>
 
     <string name="study_chart_line1">PPG [px]</string>
-    <string name="study_chart_points">załamek tętniczy</string>
+    <string name="study_chart_points">szczyt</string>
 
     <string name="instruction_title">Instrukcja</string>
     <string name="instruction_show_again">Nie pokazuj więcej</string>

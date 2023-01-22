@@ -1,8 +1,9 @@
 package pl.pw.mierzopuls.ui
 
+import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -11,13 +12,12 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import org.koin.androidx.compose.inject
-import pl.pw.mierzopuls.R
 import pl.pw.mierzopuls.alg.AlgState
-import pl.pw.mierzopuls.model.AppSetting
+import pl.pw.mierzopuls.model.Study
+import pl.pw.mierzopuls.model.toJson
 import pl.pw.mierzopuls.ui.components.InstructionDialog
 import pl.pw.mierzopuls.ui.components.LogoPW
 import pl.pw.mierzopuls.ui.components.PulseBtn
@@ -26,11 +26,32 @@ import pl.pw.mierzopuls.ui.components.PulseBtn
 @Composable
 fun Home() {
     val viewModel: HomeViewModel by inject()
-    val launcher = rememberLauncherForActivityResult(
+    val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) {}
+    var exportUri: Uri? by remember { mutableStateOf(null) }
+    var exportStudy: Study? by remember { mutableStateOf(null) }
+    val exportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("*/*")
+    ) { exportUri = it }
+    val contentResolver = LocalContext.current.contentResolver
 
-    HistoryBottomSheet(viewModel.studies) {
+    LaunchedEffect(exportUri) {
+        Log.d("LaunchEff", "export uri: $exportUri")
+        if (exportUri != null) {
+            contentResolver.openOutputStream(exportUri!!).use {
+                it!!.write(exportStudy?.toJson()?.toByteArray())
+            }
+        }
+    }
+
+    HistoryBottomSheet(
+        studies = viewModel.studies,
+        onSave = { study ->
+            exportStudy = study
+            exportLauncher.launch("${study.id}.json")
+        }
+    ) {
         Column(verticalArrangement = Arrangement.Center) {
             Box {
                 LogoPW(modifier = Modifier.align(Alignment.TopCenter))
@@ -44,12 +65,13 @@ fun Home() {
             }
             PulseBtn(modifier = Modifier
                 .align(Alignment.CenterHorizontally)
-                .fillMaxWidth().aspectRatio(1.0f),
+                .fillMaxWidth()
+                .aspectRatio(1.0f),
                 algState = viewModel.algState,
                 progress = viewModel.studyProgress,
                 onClick = {
                     if (viewModel.algState is AlgState.NONE) {
-                        viewModel.beginStudy(launcher)
+                        viewModel.beginStudy(permissionLauncher)
                     } else viewModel.dismissStudy()
                 }
             )

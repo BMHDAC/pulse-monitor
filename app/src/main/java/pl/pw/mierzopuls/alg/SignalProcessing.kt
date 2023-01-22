@@ -1,6 +1,5 @@
 package pl.pw.mierzopuls.alg
 
-import android.util.Log
 import com.github.psambit9791.jdsp.filter.Butterworth
 import com.github.psambit9791.jdsp.signal.peaks.FindPeak
 import com.github.psambit9791.jdsp.signal.peaks.Peak
@@ -64,13 +63,15 @@ fun calculatePulse(
     times: List<Int>,
     peaksIds: List<Int>
 ): Double {
-    return times.filterIndexed { idx, _ ->
+    val peakTimestamps = times.filterIndexed { idx, _ ->
         peaksIds.contains(idx)
-    }.map {
-        (times.last() - times[0]) / 1000.0
-    }.let { timePeriods ->
-        60 / timePeriods.median()
     }
+    val quantil2 = peakTimestamps.mapIndexed { idx, time ->
+        if (idx + 1 >= peakTimestamps.lastIndex) 0.0
+        else (peakTimestamps[idx + 1] - time) / 1000.0
+    }.median()
+
+    return 60.0 / quantil2
 }
 
 private fun List<Double>.median() = this.sorted().let {
