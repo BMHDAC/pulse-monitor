@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">Pulse</string>
+    <string name="app_pw_logo">App Logo</string>
+    <string name="app_history">History</string>
+
+    <string name="btn_pulse_alg_NONE">Start</string>
+    <string name="btn_pulse_alg_CALIBRATION">Calibration</string>
+    <string name="btn_pulse_alg_REGISTRACTION">Registration</string>
+    <string name="btn_pulse_alg_RESULT"><big><b>%1s</b></big></string>
+
+    <string name="study_chart_line1">PPG [px]</string>
+    <string name="study_chart_points">szczyt</string>
+
+    <string name="instruction_title">Instruction</string>
+    <string name="instruction_show_again">Show Again</string>
+    <string name="instruction_ok">OK !</string>
+
+    <string name="not_implemented">Not implemented</string>
+</resources>
