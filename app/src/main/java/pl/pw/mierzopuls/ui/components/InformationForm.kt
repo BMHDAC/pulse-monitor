@@ -56,7 +56,7 @@ fun InformationForm(
             value = viewModel.gender,
             onValueChange = { viewModel.gender = it },
             placeholder = {
-                Text(text = "gender")
+                Text(text = "Gender")
             },
             modifier = Modifier.padding(8.dp)
         )
@@ -64,15 +64,15 @@ fun InformationForm(
             value = viewModel.height,
             onValueChange = { viewModel.height = it },
             placeholder = {
-                Text(text = "Height")
+                Text(text = "Height (in cm)")
             },
             modifier = Modifier.padding(8.dp)
         )
         TextField(
-            value = viewModel.name,
+            value = viewModel.weight,
             onValueChange = { viewModel.weight = it },
             placeholder = {
-                Text(text = "Weight")
+                Text(text = "Weight (in kg)")
             },
             modifier = Modifier.padding(8.dp)
         )
